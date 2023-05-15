@@ -10,6 +10,9 @@ pygame.display.set_caption("Chess.com")
 
 class Pawn:
     # init
+    BlackPawn = pygame.image.load("Textures\\BlackPawn.png")
+    WhitePawn = pygame.image.load("Textures\\WhitePawn.png")
+
     def __init__(self, x, y, color):
         self.moves = 0
         self.x = x
@@ -23,13 +26,17 @@ class Pawn:
 
     def draw(self, window):
         if self.color == 0:
-            col = pygame.Color("Black")
+            img = self.BlackPawn
         else:
-            col = pygame.Color("White")
-        pygame.draw.circle(window, col, (self.x * 100 + 50, self.y * 100 + 50), 40)
+            img = self.WhitePawn
+        img = pygame.transform.scale(img, (80, 100))
+        window.blit(img, pygame.Rect(self.x * 100 + 10, self.y * 100, 100, 100))
 
 
 class Rook:
+    BlackRook = pygame.image.load("Textures\\BlackRook.png")
+    WhiteRook = pygame.image.load("Textures\\WhiteRook.png")
+
     def __init__(self, x, y, color):
         self.x = x
         self.y = y
@@ -41,16 +48,19 @@ class Rook:
         self.y = coords[1]
         self.moves += 1
 
-    def draw(self, prozor):
+    def draw(self, window):
         if self.color == 0:
-            col = pygame.Color("Black")
-
+            img = self.BlackRook
         else:
-            col = pygame.Color("Red")
-        pygame.draw.rect(prozor, col, (15 + self.x * 100, 15 + self.y * 100, 70, 70))
+            img = self.WhiteRook
+        img = pygame.transform.scale(img, (100, 100))
+        window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
 
 
 class Bishop:
+    BlackBishop = pygame.image.load("Textures\\BlackBishop.png")
+    WhiteBishop = pygame.image.load("Textures\\WhiteBishop.png")
+
     def __init__(self, x, y, color):
         self.x = x
         self.y = y
@@ -60,15 +70,19 @@ class Bishop:
         self.x = coords[0]
         self.y = coords[1]
 
-    def draw(self, prozor):
+    def draw(self, window):
         if self.color == 0:
-            col = pygame.Color("Black")
+            img = self.BlackBishop
         else:
-            col = pygame.Color("Red")
-        pygame.draw.rect(prozor, col, (40 + self.x * 100, 20 + self.y * 100, 20, 50))
+            img = self.WhiteBishop
+        img = pygame.transform.scale(img, (80, 100))
+        window.blit(img, pygame.Rect(self.x * 100 + 10, self.y * 100, 100, 100))
 
 
 class Queen:
+    BlackQueen = pygame.image.load("Textures\\BlackQueen.png")
+    WhiteQueen = pygame.image.load("Textures\\WhiteQueen.png")
+
     def __init__(self, x, y, color):
         self.x = x
         self.y = y
@@ -80,13 +94,17 @@ class Queen:
 
     def draw(self, prozor):
         if self.color == 0:
-            col = pygame.Color("Black")
+            img = self.BlackQueen
         else:
-            col = pygame.Color("Red")
-        pygame.draw.rect(prozor, col, (20 + self.x * 100, 20 + self.y * 100, 50, 50))
+            img = self.WhiteQueen
+        img = pygame.transform.scale(img, (100, 100))
+        window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
 
 
 class King:
+    BlackKing = pygame.image.load("Textures\\BlackKing.png")
+    WhiteKing = pygame.image.load("Textures\\WhiteKing.png")
+
     def __init__(self, x, y, color):
         self.x = x
         self.y = y
@@ -98,10 +116,33 @@ class King:
 
     def draw(self, prozor):
         if self.color == 0:
-            col = pygame.Color("Blue")
+            img = self.BlackKing
         else:
-            col = pygame.Color("Green")
-        pygame.draw.rect(prozor, col, (20 + self.x * 100, 20 + self.y * 100, 50, 50))
+            img = self.WhiteKing
+        img = pygame.transform.scale(img, (100, 100))
+        window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
+
+
+class Knight:
+    BlackKnight = pygame.image.load("Textures\\BlackKnight.png")
+    WhiteKnight = pygame.image.load("Textures\\WhiteKnight.png")
+
+    def __init__(self, x, y, color):
+        self.x = x
+        self.y = y
+        self.color = color
+
+    def move(self, coords):
+        self.x = coords[0]
+        self.y = coords[1]
+
+    def draw(self, prozor):
+        if self.color == 0:
+            img = self.BlackKnight
+        else:
+            img = self.WhiteKnight
+        img = pygame.transform.scale(img, (100, 100))
+        window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
 
 
 # Draw function
@@ -178,7 +219,7 @@ def possibleSpots(entity):
                 if status[0] == False:
                     spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
                 elif status[0] == True:
-                    print("Usao")
+
                     if status[1] == None:
                         break
                     elif status[1] != None:
@@ -196,7 +237,7 @@ def possibleSpots(entity):
                 if status[0] == False:
                     spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
                 elif status[0] == True:
-                    print("Usao")
+
                     if status[1] == None:
                         break
                     elif status[1] != None:
@@ -214,7 +255,7 @@ def possibleSpots(entity):
                 if status[0] == False:
                     spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
                 elif status[0] == True:
-                    print("Usao")
+
                     if status[1] == None:
                         break
                     elif status[1] != None:
@@ -232,7 +273,7 @@ def possibleSpots(entity):
                 if status[0] == False:
                     spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
                 elif status[0] == True:
-                    print("Usao")
+
                     if status[1] == None:
                         break
                     elif status[1] != None:
@@ -241,7 +282,20 @@ def possibleSpots(entity):
                             break
                         else:
                             break
+    if type(entity) == Knight:
+        dirs = [[-1, -2], [1, -2], [2, -1], [2, 1], [1, 2], [-1, 2], [-2, 1], [-2, -1]]
+        for i in range(8):
+            dir = dirs[i]
+            status = spotOccupied(entity.x + dir[0], entity.y + dir[1])
+            if status[0] == False:
+                spots.append([entity.x + dir[0], entity.y + dir[1]])
+            elif status[0] == True:
 
+                if status[1] == None:
+                    break
+                elif status[1] != None:
+                    if status[1].color != entity.color:
+                        spots.append([entity.x + dir[0], entity.y + dir[1]])
     return spots
 
 
@@ -292,6 +346,15 @@ def setUpBoard():
     k2 = King(4, 7, 0)
     entityList.append(k1)
     entityList.append(k2)
+    # Knights
+    kn1 = Knight(2, 0, 1)
+    kn2 = Knight(5, 0, 1)
+    kn3 = Knight(5, 7, 0)
+    kn4 = Knight(2, 7, 0)
+    entityList.append(kn1)
+    entityList.append(kn2)
+    entityList.append(kn3)
+    entityList.append(kn4)
 
 
 # COMMENt
@@ -303,7 +366,7 @@ def main():
     lastEntity = None
     program_radi = True
     spots = None
-    cooldownInit = 200
+    cooldownInit = 100
     cooldown = cooldownInit
     while program_radi:
         crtaj_tablu()
