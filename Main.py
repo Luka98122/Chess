@@ -2,6 +2,7 @@ import pygame
 import time
 from copy import *
 
+pygame.init()
 window = pygame.display.set_mode((800, 800))
 
 # Classes
@@ -38,6 +39,14 @@ class Pawn:
         img = pygame.transform.scale(img, (80, 100))
         window.blit(img, pygame.Rect(self.x * 100 + 10, self.y * 100, 100, 100))
 
+    def update(self, window, pawnIndex, EntityList):
+        if self.color == 1:
+            promoPos = 7
+        else:
+            promoPos = 0
+        if self.y == promoPos:
+            pawnPromotion(window, pawnIndex, EntityList)
+
 
 class Rook:
     BlackRook = pygame.image.load("Textures\\BlackRook.png")
@@ -62,6 +71,9 @@ class Rook:
         img = pygame.transform.scale(img, (100, 100))
         window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
 
+    def update(self):
+        pass
+
 
 class Bishop:
     BlackBishop = pygame.image.load("Textures\\BlackBishop.png")
@@ -84,6 +96,9 @@ class Bishop:
         img = pygame.transform.scale(img, (80, 100))
         window.blit(img, pygame.Rect(self.x * 100 + 10, self.y * 100, 100, 100))
 
+    def update(self):
+        pass
+
 
 class Queen:
     BlackQueen = pygame.image.load("Textures\\BlackQueen.png")
@@ -105,6 +120,9 @@ class Queen:
             img = self.WhiteQueen
         img = pygame.transform.scale(img, (100, 100))
         window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
+
+    def update(self):
+        pass
 
 
 class King:
@@ -129,6 +147,25 @@ class King:
         img = pygame.transform.scale(img, (100, 100))
         window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
 
+    def update(self, EntityList):
+        if isSpotProtected(self) == True:
+            self.checkedTime += 1
+            if self.checkedTime == 2:
+                print(f"Color {self.color} lost to a checkmate.")
+                exit()
+            else:
+                self.checkedTime = 0
+            flagVar = 0
+        if isSpotProtected(self) == False:
+            for entity in EntityList:
+                if entity.color == self.color:
+                    if possibleSpots(entity) != []:
+                        flagVar = 1
+                        break
+            if flagVar == 0:
+                print(f"Stalemate, {self.color} is pinned!")
+                exit()
+
 
 class Knight:
     BlackKnight = pygame.image.load("Textures\\BlackKnight.png")
@@ -150,6 +187,43 @@ class Knight:
             img = self.WhiteKnight
         img = pygame.transform.scale(img, (100, 100))
         window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
+
+    def update(self):
+        pass
+
+
+class Button:
+    def __init__(self, rect, text) -> None:
+        self.rect = rect
+        self.text = text
+
+    def update(self):
+        pygame.event.pump()
+        mouseB = pygame.mouse.get_pressed()
+        mousePos = pygame.mouse.get_pos()
+        if (
+            mousePos[0] > self.rect.x
+            and mousePos[0] < self.rect.x + self.rect.width
+            and mousePos[1] > self.rect.y
+            and mousePos[1] < self.rect.y + self.rect.height
+            and mouseB[0] == True
+        ):
+            return True
+        return False
+
+    def draw(self, window):
+
+        pygame.draw.rect(window, pygame.Color("White"), self.rect)
+        pygame.draw.rect(window, pygame.Color("Black"), self.rect, 2)
+        font = pygame.font.Font(None, 25)
+        text1 = font.render(self.text, True, pygame.Color("Black"))
+        text_rect = text1.get_rect(
+            center=(
+                self.rect.x + self.rect.width / 2,
+                self.rect.y + self.rect.height / 2,
+            )
+        )
+        window.blit(text1, text_rect)
 
 
 # Draw function
@@ -240,6 +314,72 @@ def pawnSpots(entity):
             if spotOccupied(entity.x, entity.y + direction * 2)[0] == False:
                 spots.append([entity.x, entity.y + direction * 2])
     return spots
+
+
+def pawnPromotion(window, pawnIndex, listOfEntities):
+    s = pygame.Surface((800, 800))  # the size of your rect
+    s.set_alpha(128)  # alpha level
+    s.fill((0, 0, 0))  # this fills the entire surface
+    buttons = []
+    bishopButton = Button(pygame.Rect(15, 100, 175, 75), "Bishop")
+    buttons.append(bishopButton)
+    knightButton = Button(pygame.Rect(215, 100, 175, 75), "Knight")
+    buttons.append(knightButton)
+    rookButton = Button(pygame.Rect(415, 100, 175, 75), "Rook")
+    buttons.append(rookButton)
+    queenButton = Button(pygame.Rect(615, 100, 175, 75), "Queen")
+    buttons.append(queenButton)
+
+    while True:
+        crtaj_tablu()
+        for entity in listOfEntities:
+            entity.draw(window)
+        window.blit(s, (0, 0))  # (0,0) are the top-left coordinates
+        for button in buttons:
+            status = button.update()
+            if status == True:
+                print(button.text)
+                if button.text == "Knight":
+                    b = Knight(
+                        listOfEntities[pawnIndex].x,
+                        listOfEntities[pawnIndex].y,
+                        listOfEntities[pawnIndex].color,
+                    )
+                    del listOfEntities[pawnIndex]
+                    listOfEntities.append(b)
+                    return
+                if button.text == "Bishop":
+                    b = Bishop(
+                        listOfEntities[pawnIndex].x,
+                        listOfEntities[pawnIndex].y,
+                        listOfEntities[pawnIndex].color,
+                    )
+                    del listOfEntities[pawnIndex]
+                    listOfEntities.append(b)
+                    return
+                if button.text == "Rook":
+                    b = Rook(
+                        listOfEntities[pawnIndex].x,
+                        listOfEntities[pawnIndex].y,
+                        listOfEntities[pawnIndex].color,
+                    )
+                    del listOfEntities[pawnIndex]
+                    listOfEntities.append(b)
+                    return
+                if button.text == "Queen":
+                    b = Queen(
+                        listOfEntities[pawnIndex].x,
+                        listOfEntities[pawnIndex].y,
+                        listOfEntities[pawnIndex].color,
+                    )
+                    del listOfEntities[pawnIndex]
+                    listOfEntities.append(b)
+                    return
+
+        for button in buttons:
+            button.draw(window)
+
+        pygame.display.flip()
 
 
 def possibleSpots(entity):
@@ -566,11 +706,25 @@ def main():
                 if turnNo % 2 == lastEntity.color or freeMove:
                     spots = possibleSpots(entityClickedOn)
         flagVar = 0
+
+        # Drawing
         for entity in entityList:
             entity.draw(window)
             if type(entity) == King and change == 1:
                 checkOnKing(entity, entityList)
                 flagVar = 1
+        for entity in entityList:
+            if type(entity) == King:
+                if change != 1:
+                    continue
+                entity.update(entityList)
+                flagVar = 1
+                continue
+            if type(entity) == Pawn:
+                entity.update(window, entityList.index(entity), entityList)
+                continue
+            entity.update()
+        # Updating
         if flagVar == 1:
             change = 0
         if spots != None:
