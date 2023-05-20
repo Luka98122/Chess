@@ -8,6 +8,12 @@ window = pygame.display.set_mode((800, 800))
 pygame.display.set_caption("Chess.com")
 
 
+class GameState:
+    def __init__(self, entityList, turn) -> None:
+        self.entityList = entityList
+        self.turn = turn
+
+
 class Pawn:
     # init
     BlackPawn = pygame.image.load("Textures\\BlackPawn.png")
@@ -109,6 +115,7 @@ class King:
         self.x = x
         self.y = y
         self.color = color
+        self.timeChecked = 0
 
     def move(self, coords):
         self.x = coords[0]
@@ -158,16 +165,8 @@ def crtaj_tablu():
             pygame.draw.rect(window, color, pygame.Rect(i * 100, j * 100, 100, 100))
 
 
-# Init test pieces
 entityList = []
-MojRook = Rook(4, 4, 0)
-entityList.append(MojRook)
 
-mojPawn = Pawn(3, 3, 1)
-entityList.append(mojPawn)
-
-MojBishop = Bishop(5, 5, 0)
-entityList.append(MojBishop)
 
 # Helper functions
 def getTileClickedOn(mousePos):
@@ -188,6 +187,61 @@ def spotOccupied(x, y):
     return [False, None]
 
 
+def kingSpots(entity):
+    spots = []
+    dirs = [[1, -1], [1, 1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]
+    for i in range(8):
+        dir = dirs[i]
+        for j in range(1, 2):
+            status = spotOccupied(entity.x + dir[0] * j, entity.y + dir[1] * j)
+            if status[0] == False:
+                spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
+            elif status[0] == True:
+
+                if status[1] == None:
+                    break
+                elif status[1] != None:
+                    if status[1].color != entity.color:
+                        spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
+                        break
+                    else:
+                        break
+    return spots
+
+
+def pawnSpots(entity):
+    spots = []
+    if entity.color == 0:
+        direction = -1
+    if entity.color == 1:
+        direction = 1
+    if spotOccupied(entity.x + 1, entity.y + direction)[0] == False:
+        spots.append([entity.x + 1, entity.y + direction])
+    if spotOccupied(entity.x + 1, entity.y + direction)[1] != None:
+        if (
+            spotOccupied(entity.x + 1, entity.y + direction)[0] == True
+            and spotOccupied(entity.x + 1, entity.y + direction)[1].color
+            == entity.color
+        ):
+            spots.append([entity.x + 1, entity.y + direction])
+
+    if spotOccupied(entity.x - 1, entity.y + direction)[0] == False:
+        spots.append([entity.x - 1, entity.y + direction])
+    if spotOccupied(entity.x - 1, entity.y + direction)[1] != None:
+        if (
+            spotOccupied(entity.x - 1, entity.y + direction)[0] == True
+            and spotOccupied(entity.x - 1, entity.y + direction)[1].color
+            == entity.color
+        ):
+            spots.append([entity.x - 1, entity.y + direction])
+
+    if entity.moves == 0:
+        if spotOccupied(entity.x, entity.y + direction)[0] == False:
+            if spotOccupied(entity.x, entity.y + direction * 2)[0] == False:
+                spots.append([entity.x, entity.y + direction * 2])
+    return spots
+
+
 def possibleSpots(entity):
     spots = []
     if type(entity) == Pawn:
@@ -200,15 +254,21 @@ def possibleSpots(entity):
         if (
             spotOccupied(entity.x + 1, entity.y + direction)[0] == True
             and spotOccupied(entity.x + 1, entity.y + direction)[1] != None
+            and spotOccupied(entity.x + 1, entity.y + direction)[1].color
+            != entity.color
         ):
             spots.append([entity.x + 1, entity.y + direction])
         if (
             spotOccupied(entity.x - 1, entity.y + direction)[0] == True
             and spotOccupied(entity.x - 1, entity.y + direction)[1] != None
+            and spotOccupied(entity.x - 1, entity.y + direction)[1].color
+            != entity.color
         ):
             spots.append([entity.x - 1, entity.y + direction])
         if entity.moves == 0:
-            spots.append([entity.x, entity.y + direction * 2])
+            if spotOccupied(entity.x, entity.y + direction)[0] == False:
+                if spotOccupied(entity.x, entity.y + direction * 2)[0] == False:
+                    spots.append([entity.x, entity.y + direction * 2])
     if type(entity) == Rook:
         spots = []
         dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]]
@@ -282,6 +342,14 @@ def possibleSpots(entity):
                             break
                         else:
                             break
+        drawSpots2(spots, window)
+        pygame.display.flip()
+        realSpots = []
+        for spot in spots:
+            res = canKingGoHere(spot[0], spot[1], entity, entityList)
+            if res == True:
+                realSpots.append(spot)
+        return realSpots
     if type(entity) == Knight:
         dirs = [[-1, -2], [1, -2], [2, -1], [2, 1], [1, 2], [-1, 2], [-2, 1], [-2, -1]]
         for i in range(8):
@@ -292,7 +360,7 @@ def possibleSpots(entity):
             elif status[0] == True:
 
                 if status[1] == None:
-                    break
+                    pass
                 elif status[1] != None:
                     if status[1].color != entity.color:
                         spots.append([entity.x + dir[0], entity.y + dir[1]])
@@ -305,6 +373,57 @@ def drawSpots(spots, window):
         pygame.draw.circle(
             window, pygame.Color("Gray"), (spot[0] * 100 + 50, spot[1] * 100 + 50), 20
         )
+
+
+def drawSpots2(spots, window):
+    # Spot 0 je x, spot 1 je y
+    for spot in spots:
+        pygame.draw.circle(
+            window, pygame.Color("Red"), (spot[0] * 100 + 50, spot[1] * 100 + 50), 20
+        )
+
+
+def isSpotProtected(entity1):
+    x = entity1.x
+    y = entity1.y
+    for entity in entityList:
+        if entity.color != entity1.color:
+            if type(entity) == King:
+                print("Made it")
+                if [x, y] in kingSpots(entity):
+                    print("Used kingSpots")
+                    return True
+                continue
+            if type(entity) == Pawn:
+                if [x, y] in pawnSpots(entity):
+                    return True
+                continue
+            if [x, y] in possibleSpots(entity):
+                return True
+    return False
+
+
+def canKingGoHere(x, y, king, entityList):
+    spotOc = spotOccupied(x, y)
+    if spotOc[0] == True:
+        if spotOc[1] != None:
+            if spotOc[1].color == king.color:
+                return False
+    for entity in entityList:
+        if entity.color != king.color:
+            if type(entity) == King:
+                print("Made it")
+                if [x, y] in kingSpots(entity):
+                    print("Used kingSpots")
+                    return False
+                continue
+            if type(entity) == Pawn:
+                if [x, y] in pawnSpots(entity):
+                    return False
+                continue
+            if [x, y] in possibleSpots(entity):
+                return False
+    return True
 
 
 def setUpPawns():
@@ -328,10 +447,10 @@ def setUpBoard():
     entityList.append(rook3)
     entityList.append(rook4)
     # Bishops
-    b1 = Bishop(1, 0, 1)
-    b2 = Bishop(6, 0, 1)
-    b3 = Bishop(1, 7, 0)
-    b4 = Bishop(6, 7, 0)
+    b1 = Knight(1, 0, 1)
+    b2 = Knight(6, 0, 1)
+    b3 = Knight(1, 7, 0)
+    b4 = Knight(6, 7, 0)
     entityList.append(b1)
     entityList.append(b2)
     entityList.append(b3)
@@ -347,39 +466,65 @@ def setUpBoard():
     entityList.append(k1)
     entityList.append(k2)
     # Knights
-    kn1 = Knight(2, 0, 1)
-    kn2 = Knight(5, 0, 1)
-    kn3 = Knight(5, 7, 0)
-    kn4 = Knight(2, 7, 0)
+    kn1 = Bishop(2, 0, 1)
+    kn2 = Bishop(5, 0, 1)
+    kn3 = Bishop(5, 7, 0)
+    kn4 = Bishop(2, 7, 0)
     entityList.append(kn1)
     entityList.append(kn2)
     entityList.append(kn3)
     entityList.append(kn4)
 
 
-# COMMENt
-a = 2
+def checkOnKing(king, entityList):
+    # if isSpotProtected(king) == False:
+    #    if possibleSpots(king) == []:
+    #        print(f"Color {king.color} lost to a stalemate")
+    if isSpotProtected(king) == True:
+        king.checkedTime += 1
+        if king.checkedTime == 2:
+            print(f"Color {king.color} lost to a checkmate.")
+            exit()
+    else:
+        king.checkedTime = 0
+    flagVar = 0
+    if isSpotProtected(king) == False:
+        for entity in entityList:
+            if entity.color == king.color:
+                if possibleSpots(entity) != []:
+                    flagVar = 1
+                    break
+        if flagVar == 0:
+            print(f"Stalemate, {king.color} is pinned!")
+            exit()
 
+
+# COMMENt
 setUpBoard()
 # Main
+
+
 def main():
     lastEntity = None
     program_radi = True
     spots = None
-    cooldownInit = 100
+    cooldownInit = 30
     cooldown = cooldownInit
+    turnNo = 1
+    freeMove = True
     while program_radi:
         crtaj_tablu()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 program_radi = False
         mouseB = pygame.mouse.get_pressed()
-
+        change = 0
         if mouseB[0] == True and cooldown <= 0:
-            cooldown = cooldownInit
             mousePos = pygame.mouse.get_pos()
             tilePos = getTileClickedOn(mousePos)
             entityClickedOn = spotOccupied(tilePos[0], tilePos[1])[1]
+            if entityClickedOn != None:
+                cooldown = cooldownInit
             if entityClickedOn != None and lastEntity == entityClickedOn:
                 entityClickedOn = None
                 lastEntity = None
@@ -387,23 +532,28 @@ def main():
             res = spotOccupied(tilePos[0], tilePos[1])
             if spots != None:
                 if lastEntity != None:
-                    if res[0] == True:
-                        if res[1] != None:
-                            if res[1].color != lastEntity.color:
-                                if tilePos in spots:
-                                    lastEntity.move(tilePos)
-                                    entityList.remove(entityClickedOn)
-                                    entityClickedOn = None
-                                    lastEntity = None
-                                    print("Moved")
-                                    spots = None
-                                    mouseB = False
-                                    continue
-                    else:
-                        if tilePos in spots:
-                            print("Moved 2")
-                            lastEntity.move(tilePos)
-                            spots = None
+                    if turnNo % 2 == lastEntity.color or freeMove:
+                        if res[0] == True:
+                            if res[1] != None:
+                                if res[1].color != lastEntity.color:
+                                    if tilePos in spots:
+                                        lastEntity.move(tilePos)
+                                        change = 1
+                                        turnNo += 1
+                                        entityList.remove(entityClickedOn)
+                                        entityClickedOn = None
+                                        lastEntity = None
+                                        print("Moved")
+                                        spots = None
+                                        mouseB = False
+                                        continue
+                        else:
+                            if tilePos in spots:
+                                print("Moved 2")
+                                lastEntity.move(tilePos)
+                                change = 1
+                                turnNo += 1
+                                spots = None
                 else:
                     print("None")
 
@@ -412,11 +562,17 @@ def main():
                 print("none type")
                 pass
             else:
-                spots = possibleSpots(entityClickedOn)
                 lastEntity = entityClickedOn
-                print("moved")
+                if turnNo % 2 == lastEntity.color or freeMove:
+                    spots = possibleSpots(entityClickedOn)
+        flagVar = 0
         for entity in entityList:
             entity.draw(window)
+            if type(entity) == King and change == 1:
+                checkOnKing(entity, entityList)
+                flagVar = 1
+        if flagVar == 1:
+            change = 0
         if spots != None:
             drawSpots(spots, window)
         pygame.display.flip()
