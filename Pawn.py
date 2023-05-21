@@ -1,9 +1,6 @@
 import pygame
 from Button import *
-from Knight import *
-from Bishop import *
-from Queen import *
-from Rook import *
+from HelperFunctions import *
 
 
 class Pawn:
@@ -12,12 +9,11 @@ class Pawn:
     WhitePawn = pygame.image.load("Textures\\WhitePawn.png")
     strType = "pawn"
 
-    def __init__(self, x, y, color, crtaj_tablu):
+    def __init__(self, x, y, color):
         self.moves = 0
         self.x = x
         self.y = y
         self.color = color
-        self.crtaj_tablu = crtaj_tablu
 
     def move(self, coords):
         self.x = coords[0]
@@ -45,13 +41,13 @@ class Pawn:
         s.set_alpha(128)  # alpha level
         s.fill((0, 0, 0))  # this fills the entire surface
         buttons = []
-        bishopButton = Button(pygame.Rect(15, 100, 175, 75), "Bishop")
+        bishopButton = Button(pygame.Rect(15, 100, 175, 75), "Bishop", 25)
         buttons.append(bishopButton)
-        knightButton = Button(pygame.Rect(215, 100, 175, 75), "Knight")
+        knightButton = Button(pygame.Rect(215, 100, 175, 75), "Knight", 25)
         buttons.append(knightButton)
-        rookButton = Button(pygame.Rect(415, 100, 175, 75), "Rook")
+        rookButton = Button(pygame.Rect(415, 100, 175, 75), "Rook", 25)
         buttons.append(rookButton)
-        queenButton = Button(pygame.Rect(615, 100, 175, 75), "Queen")
+        queenButton = Button(pygame.Rect(615, 100, 175, 75), "Queen", 25)
         buttons.append(queenButton)
 
         while True:

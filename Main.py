@@ -215,10 +215,10 @@ def canKingGoHere(x, y, king, entityList):
 
 def setUpPawns():
     for i in range(8):
-        pawn = Pawn(i, 1, 1, crtaj_tablu)
+        pawn = Pawn(i, 1, 1)
         entityList.append(pawn)
     for i in range(8):
-        pawn = Pawn(i, 6, 0, crtaj_tablu)
+        pawn = Pawn(i, 6, 0)
         entityList.append(pawn)
 
 

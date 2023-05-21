@@ -1,10 +1,13 @@
 import pygame
 
+pygame.init()
+
 
 class Button:
-    def __init__(self, rect, text) -> None:
+    def __init__(self, rect, text, textSize) -> None:
         self.rect = rect
         self.text = text
+        self.textSize = textSize
 
     def update(self):
         pygame.event.pump()
@@ -24,7 +27,7 @@ class Button:
 
         pygame.draw.rect(window, pygame.Color("White"), self.rect)
         pygame.draw.rect(window, pygame.Color("Black"), self.rect, 2)
-        font = pygame.font.Font(None, 25)
+        font = pygame.font.Font(None, self.textSize)
         text1 = font.render(self.text, True, pygame.Color("Black"))
         text_rect = text1.get_rect(
             center=(
