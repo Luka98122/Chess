@@ -77,9 +77,9 @@ def jsonSerializer(object):
 
 def createObject(strType, pos, color):
     if strType == "None":
-        return
+        return "Error"
     if strType == "Remove":
-        exit()
+        return "Error"
     if strType == "pawn":
         obj = Pawn(pos[0], pos[1], color)
     if strType == "bishop":
@@ -136,7 +136,8 @@ def load_file(filepath):
         entityListofDicts = gameState["GameState"]
     for dict in entityListofDicts:
         entity = jsonDecoder(dict)
-        entityList.append(entity)
+        if entity not in ["Error", None]:
+            entityList.append(entity)
     print("LOADED")
     return entityList
 
@@ -157,13 +158,13 @@ while True:
                 root = tk.Tk()
                 root.withdraw()  # Hide the main window
                 path = select_file()
-                if path != None:
+                if path != None and path != "":
                     entityList = load_file(path)
             elif button.text == "Save File":
                 root = tk.Tk()
                 root.withdraw()  # Hide the main window
                 path = select_save_file()
-                if path != None:
+                if path != None and path != "":
                     save_file(path, entityList)
             elif button.text == "Remove Piece":
                 selectedType = "Remove"
@@ -187,7 +188,8 @@ while True:
                 and selectedType != "Remove"
             ):
                 entity = createObject(selectedType, tileCoords, colorIndex)
-                entityList.append(entity)
+                if entity not in ["Error", None]:
+                    entityList.append(entity)
             elif selectedType == "Remove":
                 for entity in entityList:
                     if entity.x == tileCoords[0] and entity.y == tileCoords[1]:
