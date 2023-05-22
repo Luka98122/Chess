@@ -1,6 +1,10 @@
 import pygame
 from Button import *
 from HelperFunctions import *
+from Bishop import *
+from Rook import *
+from Knight import *
+from Queen import *
 
 
 class Pawn:
@@ -51,7 +55,7 @@ class Pawn:
         buttons.append(queenButton)
 
         while True:
-            self.crtaj_tablu(window)
+            crtaj_tablu(window)
             for entity in listOfEntities:
                 entity.draw(window)
             window.blit(s, (0, 0))  # (0,0) are the top-left coordinates

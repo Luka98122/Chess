@@ -1,5 +1,9 @@
 import pygame
 import time
+import tkinter as tk
+from tkinter import filedialog
+import json
+
 from copy import *
 from Pawn import *
 from Button import *
@@ -10,6 +14,7 @@ from Queen import *
 from King import *
 
 from HelperFunctions import *
+from MovingText import *
 
 pygame.init()
 window = pygame.display.set_mode((800, 800))
@@ -263,6 +268,52 @@ def setUpBoard():
     entityList.append(kn4)
 
 
+def createObject(strType, pos, color):
+    if strType == "None":
+        return "Error"
+    if strType == "Remove":
+        return "Error"
+    if strType == "pawn":
+        obj = Pawn(pos[0], pos[1], color)
+    if strType == "bishop":
+        obj = Bishop(pos[0], pos[1], color)
+    if strType == "knight":
+        obj = Knight(pos[0], pos[1], color)
+    if strType == "rook":
+        obj = Rook(pos[0], pos[1], color)
+    if strType == "queen":
+        obj = Queen(pos[0], pos[1], color)
+    if strType == "king":
+        obj = King(pos[0], pos[1], color)
+    return obj
+
+
+def select_file():
+    filepath = filedialog.askopenfilename(
+        filetypes=[("Chess Save", ".chess")], defaultextension=".chess"
+    )
+    print(filepath)
+    return filepath
+
+
+def jsonDecoder(data):
+    obj = createObject(data["type"], [data["x"], data["y"]], data["color"])
+    return obj
+
+
+def load_file(filepath):
+    entityList = []
+    with open(filepath, "r") as file:
+        gameState = json.load(file)
+        entityListofDicts = gameState["GameState"]
+    for dict in entityListofDicts:
+        entity = jsonDecoder(dict)
+        if entity not in ["Error", None]:
+            entityList.append(entity)
+    print("LOADED")
+    return entityList
+
+
 def checkOnKing(king, entityList):
     # if isSpotProtected(king) == False:
     #    if possibleSpots(king) == []:
@@ -305,14 +356,74 @@ setUpBoard()
 # Main
 
 
-def main():
+def doScreen(screenCode, window):
+    if screenCode == "credits":
+        creditsSpeed = 0.2
+        creditsText = MovingText("-Credits-", 40, "Red", 200, -100, [200, 100], 0, 0.2)
+        LMText = MovingText("Luka Markovic", 40, "Red", 200, -150, [200, 100], 0, 0.2)
+        DLText = MovingText("Dejan Livada", 40, "Red", 200, -200, [200, 100], 0, 0.2)
+        texts = []
+        texts.append(creditsText)
+        texts.append(LMText)
+        texts.append(DLText)
+        while True:
+            window.fill("Black")
+            for text in texts:
+                text.update()
+                text.draw(window)
+                if text.text == "Dejan Livada" and text.y > 810:
+                    return
+            pygame.display.flip()
+
+
+def main_menu():
+    listOfButtons = []
+    playButton = Button(pygame.Rect(300, 50, 200, 100), "Play Shared Computer", 25)
+    listOfButtons.append(playButton)
+    playButton = Button(pygame.Rect(300, 200, 200, 100), "Lan Multiplayer", 25)
+    listOfButtons.append(playButton)
+    playButton = Button(pygame.Rect(300, 350, 200, 100), "Load Game", 25)
+    listOfButtons.append(playButton)
+    playButton = Button(pygame.Rect(300, 500, 200, 100), "Credits", 25)
+    listOfButtons.append(playButton)
+    playButton = Button(pygame.Rect(300, 650, 200, 100), "Quit", 25)
+    listOfButtons.append(playButton)
+
+    while True:
+        window.fill("Black")
+
+        for button in listOfButtons:
+            res = button.update()
+            if res == True:
+                if button.text == "Play Shared Computer":
+                    main(False)
+                if button.text == "Credits":
+                    doScreen("credits", window)
+                if button.text == "Quit":
+                    exit()
+                if button.text == "Load Game":
+                    root = tk.Tk()
+                    root.withdraw()
+                    path = select_file()
+                    if path not in [None, ""]:
+                        entityList = load_file(path)
+                        main(False, entityList)
+                    else:
+                        return
+
+        for button in listOfButtons:
+            button.draw(window)
+
+        pygame.display.flip()
+
+
+def main(freeMove, entityList):
     lastEntity = None
     program_radi = True
     spots = None
     cooldownInit = 30
     cooldown = cooldownInit
     turnNo = 1
-    freeMove = True
     while program_radi:
         crtaj_tablu(window)
         for event in pygame.event.get():
@@ -394,4 +505,5 @@ def main():
         cooldown -= 1
 
 
-main()
+main_menu()
+main(True, entityList)
