@@ -2,6 +2,7 @@ import pygame
 from HelperFunctions import *
 import time
 
+
 class King:
     BlackKing = pygame.image.load("Textures\\BlackKing.png")
     WhiteKing = pygame.image.load("Textures\\WhiteKing.png")
@@ -53,10 +54,10 @@ class King:
             else:
                 self.checkedTime = 0
             flagVar = 0
-        if isSpotProtected(self,EntityList, possibleSpots) == False:
+        if isSpotProtected(self, EntityList, possibleSpots) == False:
             for entity in EntityList:
                 if entity.color == self.color:
-                    if possibleSpots(entity) != []:
+                    if possibleSpots(entity, EntityList) != []:
                         flagVar = 1
                         break
             if flagVar == 0:

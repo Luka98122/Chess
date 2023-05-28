@@ -3,6 +3,8 @@ import time
 import tkinter as tk
 from tkinter import filedialog
 import json
+import socket
+
 
 from copy import *
 from Pawn import *
@@ -54,7 +56,7 @@ def drawSpots2(spots, window):
         )
 
 
-def possibleSpots(entity):
+def possibleSpots(entity, entityList):
     spots = []
     if type(entity) == Pawn:
         if entity.color == 0:
@@ -213,22 +215,23 @@ def canKingGoHere(x, y, king, entityList):
                 if [x, y] in pawnSpots(entity, entityList):
                     return False
                 continue
-            if [x, y] in possibleSpots(entity):
+            if [x, y] in possibleSpots(entity, entityList):
                 return False
     return True
 
 
-def setUpPawns():
+def setUpPawns(entityList):
     for i in range(8):
         pawn = Pawn(i, 1, 1)
         entityList.append(pawn)
     for i in range(8):
         pawn = Pawn(i, 6, 0)
         entityList.append(pawn)
+    return entityList
 
 
-def setUpBoard():
-    setUpPawns()
+def setUpBoard(entityList):
+    entityList = setUpPawns(entityList)
     # Rooks
     rook1 = Rook(0, 0, 1)
     rook2 = Rook(7, 0, 1)
@@ -266,6 +269,7 @@ def setUpBoard():
     entityList.append(kn2)
     entityList.append(kn3)
     entityList.append(kn4)
+    return entityList
 
 
 def createObject(strType, pos, color):
@@ -343,7 +347,7 @@ def checkOnKing(king, entityList):
     if isSpotProtected(king, entityList, possibleSpots) == False:
         for entity in entityList:
             if entity.color == king.color:
-                if possibleSpots(entity) != []:
+                if possibleSpots(entity, entityList) != []:
                     flagVar = 1
                     break
         if flagVar == 0:
@@ -351,8 +355,6 @@ def checkOnKing(king, entityList):
             exit()
 
 
-# COMMENt
-setUpBoard()
 # Main
 
 
@@ -396,7 +398,7 @@ def main_menu():
             res = button.update()
             if res == True:
                 if button.text == "Play Shared Computer":
-                    main(False)
+                    main(False, None)
                 if button.text == "Credits":
                     doScreen("credits", window)
                 if button.text == "Quit":
@@ -417,7 +419,33 @@ def main_menu():
         pygame.display.flip()
 
 
-def main(freeMove, entityList):
+def serialize_to_json(x, y, x1, y1):
+    data = {"x": x, "y": y, "x1": x1, "y1": y1}
+    json_data = json.dumps(data)
+    return json_data
+
+
+def deserialize_from_json(json_data):
+    data = json.loads(json_data)
+
+    x = data["x"]
+    y = data["y"]
+    x1 = data["x1"]
+    y1 = data["y1"]
+
+    return x, y, x1, y1
+
+
+def main_online_client():
+    serverIp = input()
+    if entityList == None:
+        entityList = []
+        entityList = setUpBoard(entityList)
+    serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if input("1 or 2") == "1":
+        serverSocket.connect(serverIp, 61292)
+    if input("1 or 2") == "2":
+        serverSocket.connect(serverIp, 61293)
     lastEntity = None
     program_radi = True
     spots = None
@@ -443,6 +471,116 @@ def main(freeMove, entityList):
                 spots = None
             res = spotOccupied(tilePos[0], tilePos[1], entityList)
             if spots != None:
+                print("Clickeeeeeed")
+                if lastEntity != None:
+                    if turnNo % 2 == lastEntity.color:
+                        if res[0] == True:
+                            if res[1] != None:
+                                if res[1].color != lastEntity.color:
+                                    if tilePos in spots:
+                                        serverSocket.send(
+                                            serialize_to_json(
+                                                lastEntity.x,
+                                                lastEntity.y,
+                                                tilePos[0],
+                                                tilePos[1],
+                                            )
+                                        )
+
+                                        lastEntity.move(tilePos)
+                                        change = 1
+                                        turnNo += 1
+                                        entityList.remove(entityClickedOn)
+                                        entityClickedOn = None
+                                        lastEntity = None
+                                        print("Moved")
+                                        spots = None
+                                        mouseB = False
+                                        continue
+                        else:
+                            if tilePos in spots:
+                                print("Moved 2")
+                                serverSocket.send(
+                                    serialize_to_json(
+                                        lastEntity.x,
+                                        lastEntity.y,
+                                        tilePos[0],
+                                        tilePos[1],
+                                    )
+                                )
+                                lastEntity.move(tilePos)
+                                change = 1
+                                turnNo += 1
+                                spots = None
+                else:
+                    print("None")
+
+            print("got clicked")
+            if entityClickedOn == None:
+                print("none type")
+                pass
+            else:
+                lastEntity = entityClickedOn
+                if turnNo % 2 == lastEntity.color or freeMove:
+                    spots = possibleSpots(entityClickedOn, entityList)
+        flagVar = 0
+
+        # Drawing
+        for entity in entityList:
+            entity.draw(window)
+            if type(entity) == King and change == 1:
+                checkOnKing(entity, entityList)
+                flagVar = 1
+        for entity in entityList:
+            if type(entity) == King:
+                if change != 1:
+                    continue
+                entity.update(entityList, possibleSpots)
+                flagVar = 1
+                continue
+            if type(entity) == Pawn:
+                entity.update(window, entityList.index(entity), entityList)
+                continue
+            entity.update()
+        # Updating
+        if flagVar == 1:
+            change = 0
+        if spots != None:
+            drawSpots(spots, window)
+        pygame.display.flip()
+        cooldown -= 1
+
+
+def main(freeMove, entityList):
+    if entityList == None:
+        entityList = []
+        entityList = setUpBoard(entityList)
+    lastEntity = None
+    program_radi = True
+    spots = None
+    cooldownInit = 30
+    cooldown = cooldownInit
+    turnNo = 1
+    while program_radi:
+        crtaj_tablu(window)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                program_radi = False
+        mouseB = pygame.mouse.get_pressed()
+        change = 0
+        if mouseB[0] == True and cooldown <= 0:
+            mousePos = pygame.mouse.get_pos()
+            tilePos = getTileClickedOn(mousePos)
+            entityClickedOn = spotOccupied(tilePos[0], tilePos[1], entityList)[1]
+            if entityClickedOn != None:
+                cooldown = cooldownInit
+            if entityClickedOn != None and lastEntity == entityClickedOn:
+                entityClickedOn = None
+                lastEntity = None
+                spots = None
+            res = spotOccupied(tilePos[0], tilePos[1], entityList)
+            if spots != None:
+                print("Clickeeeeeed")
                 if lastEntity != None:
                     if turnNo % 2 == lastEntity.color or freeMove:
                         if res[0] == True:
@@ -476,7 +614,7 @@ def main(freeMove, entityList):
             else:
                 lastEntity = entityClickedOn
                 if turnNo % 2 == lastEntity.color or freeMove:
-                    spots = possibleSpots(entityClickedOn)
+                    spots = possibleSpots(entityClickedOn, entityList)
         flagVar = 0
 
         # Drawing
@@ -504,6 +642,40 @@ def main(freeMove, entityList):
         pygame.display.flip()
         cooldown -= 1
 
+
+def main_server_mode():
+
+    server1_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server2_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    player1IP = input("Enter player 1s ip address.")
+    player2IP = input("Enter player 2s ip address.")
+    server1_socket.bind("0.0.0.0", 61292)
+    server2_socket.bind("0.0.0.0", 61293)
+    client1_socket, client1_address = server1_socket.accept()
+    client2_socket, client2_address = server2_socket.accept()
+
+    entityList = setUpBoard([])
+    turnNo = 1
+    while True:
+        if turnNo % 2 == 0:
+            playerInput = input()  # [[x,y] to [x1,y1]]
+        else:
+            playerInput = input()
+        x = int(playerInput.split(",")[0])
+        y = int(playerInput.split(",")[1])
+        x1 = int(playerInput.split(",")[2])
+        y1 = int(playerInput.split(",")[3])
+
+        entityClickedOn = spotOccupied(x, y, entityList)[1]
+        spots = possibleSpots(entityClickedOn, entityList)
+        if [x1, y1] in spots:
+            entityClickedOn.move([x1, y1])
+            print("Moved")
+        else:
+            print("Illegal move")
+
+
+main_server_mode()
 
 main_menu()
 main(True, entityList)

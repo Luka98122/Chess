@@ -108,6 +108,6 @@ def isSpotProtected(entity1, entityList, possibleSpots):
                 if [x, y] in pawnSpots(entity, entityList):
                     return True
                 continue
-            if [x, y] in possibleSpots(entity):
+            if [x, y] in possibleSpots(entity, entityList):
                 return True
     return False
