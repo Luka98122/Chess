@@ -301,6 +301,17 @@ def jsonDecoder(data):
     return obj
 
 
+def jsonDecoderBig(data):
+    print(data.decode())
+    data = json.loads(data.decode())
+    gamestate = data["GameState"]
+    rL = []
+    for item in gamestate:
+        obj = jsonDecoder(item)
+        rL.append(obj)
+    return rL
+
+
 def load_file(filepath):
     entityList = []
     with open(filepath, "r") as file:
@@ -424,6 +435,8 @@ def serialize_to_json(x, y, x1, y1):
 
 
 def deserialize_from_json(json_data):
+    if json_data == "":
+        return "WHY"
     data = json.loads(json_data)
 
     x = data["x"]
@@ -456,8 +469,44 @@ def main_online_client():
     string = ""
     if playerID == 0:
         string = "BLACK"
+        print(
+            "__________.__                 __        _________ .____    .______________ __________________"
+        )
+        print(
+            "\______   \  | _____    ____ |  | __    \_   ___ \|    |   |   \_   _____/ \      \__    ___/"
+        )
+        print(
+            " |    |  _/  | \__  \ _/ ___\|  |/ /    /    \  \/|    |   |   ||    __)_  /   |   \|    |   "
+        )
+        print(
+            " |    |   \  |__/ __ \\  \___|    <     \     \___|    |___|   ||        \/    |    \    |   "
+        )
+        print(
+            " |______  /____(____  /\___  >__|_ \     \______  /_______ \___/_______  /\____|__  /____|   "
+        )
+        print(
+            "        \/          \/     \/     \/            \/        \/           \/         \/       "
+        )
     else:
         string = "WHITE"
+        print(
+            " __      __.__    .__  __           _________ .____    .______________ __________________"
+        )
+        print(
+            "/  \    /  \  |__ |__|/  |_  ____   \_   ___ \|    |   |   \_   _____/ \      \__    ___/"
+        )
+        print(
+            "\   \/\/   /  |  \|  \   __\/ __ \  /    \  \/|    |   |   ||    __)_  /   |   \|    |   "
+        )
+        print(
+            " \        /|   Y  \  ||  | \  ___/  \     \___|    |___|   ||        \/    |    \    |   "
+        )
+        print(
+            "  \__/\  / |___|  /__||__|  \___  >  \______  /_______ \___/_______  /\____|__  /____|   "
+        )
+        print(
+            "       \/       \/              \/          \/        \/           \/         \/        "
+        )
     pygame.display.set_caption(f"Online client {string}")
     while program_radi:
         if turnNo % 2 != playerID:
@@ -465,6 +514,20 @@ def main_online_client():
             for entity in entityList:
                 entity.draw(window)
             pygame.display.flip()
+            rres = serverSocket.recv(4096)
+            try:
+                res = rres.decode()
+                print(res)
+                entityList = jsonDecoder(res[0].decode())
+                a = 2
+                turnNo = res[0].decode()["TurnNo"]
+            except:
+                print("Couldnt decode AWAKENING")
+                print(rres[0])
+                entityList = jsonDecoderBig(rres)
+                a = 2
+                turnNo = json.loads(rres.decode())["TurnNo"]
+
             continue
 
         crtaj_tablu(window)
@@ -507,12 +570,15 @@ def main_online_client():
                                 try:
                                     res = rres.decode()
                                     print(res)
+                                    entityList = jsonDecoder(res[0].decode())
                                     a = 2
+                                    turnNo = res[0].decode()["TurnNo"]
                                 except:
                                     print("Couldnt decode")
                                     print(rres[0])
+                                    entityList = jsonDecoder(rres)
                                     a = 2
-                                entityList = jsonDecoder()
+                                    turnNo = json.loads(res.decode())["TurnNo"]
 
                                 change = 1
                                 turnNo += 1
@@ -606,11 +672,14 @@ def main_server_mode():
     while True:
         print("in this loop")
         if turnNo % 2 == 0:
-            playerInput = client1_socket.recvfrom(4096)[0]
+            playerInput = client1_socket.recvfrom(4096)[0].decode()
         else:
-            playerInput = client2_socket.recvfrom(4096)[0]
+            playerInput = client2_socket.recvfrom(4096)[0].decode()
         print("Got stuff")
         b = deserialize_from_json(playerInput)
+        if b == "WHY":
+            print("got why")
+            continue
         x = b[0]
         y = b[1]
         x1 = b[2]
@@ -628,7 +697,9 @@ def main_server_mode():
             info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
             json_object = json.dumps(info, indent=4)
             print("Moved")
-            server1_socket.sendall(json_object)
+            client1_socket.sendall(json_object.encode())
+            client2_socket.sendall(json_object.encode())
+
         else:
             info = {"GameState": None, "TurnNo": turnNo, "Validity": False}
             json_object = json.dumps(info, indent=4)
