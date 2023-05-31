@@ -564,25 +564,11 @@ def main_online_client():
                                         lastEntity.y,
                                         tilePos[0],
                                         tilePos[1],
-                                    )
+                                    ).encode()
                                 )
-                                rres = serverSocket.recv(4096)
-                                try:
-                                    res = rres.decode()
-                                    print(res)
-                                    entityList = jsonDecoder(res[0].decode())
-                                    a = 2
-                                    turnNo = res[0].decode()["TurnNo"]
-                                except:
-                                    print("Couldnt decode")
-                                    print(rres[0])
-                                    entityList = jsonDecoder(rres)
-                                    a = 2
-                                    turnNo = json.loads(res.decode())["TurnNo"]
 
                                 change = 1
                                 turnNo += 1
-                                entityList.remove(entityClickedOn)
                                 entityClickedOn = None
                                 lastEntity = None
                                 print("Moved")
@@ -601,10 +587,10 @@ def main_online_client():
                                 ).encode()
                             )
                             print("Successfully sent")
-                            lastEntity.move(tilePos)
                             change = 1
                             turnNo += 1
                             spots = None
+                            continue
                 else:
                     print("None")
 
@@ -688,6 +674,8 @@ def main_server_mode():
         entityClickedOn = spotOccupied(x, y, entityList)[1]
         spots = possibleSpots(entityClickedOn, entityList)
         if [x1, y1] in spots:
+            if spotOccupied(x1, y1, entityList)[0] == True:
+                del entityList[entityList.index(spotOccupied(x1, y1, entityList)[1])]
             entityClickedOn.move([x1, y1])
             dataList = []
             for entity in entityList:
@@ -697,6 +685,9 @@ def main_server_mode():
             info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
             json_object = json.dumps(info, indent=4)
             print("Moved")
+            if json_object.encode() == b"":
+                print("OMG BUGGGGGGGGGGGGGGGG")
+                a = 2
             client1_socket.sendall(json_object.encode())
             client2_socket.sendall(json_object.encode())
 
@@ -704,7 +695,10 @@ def main_server_mode():
             info = {"GameState": None, "TurnNo": turnNo, "Validity": False}
             json_object = json.dumps(info, indent=4)
             print("Moved")
-            server1_socket.sendall(json_object)
+            if json_object.encode() == b"":
+                print(" ILLEGAL MOVE BUG")
+                a = 2
+            server1_socket.sendall(json_object.encode())
             print("Illegal move")
 
         # crtaj_tablu(window)
