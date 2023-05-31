@@ -19,10 +19,6 @@ from HelperFunctions import *
 from MovingText import *
 
 pygame.init()
-window = pygame.display.set_mode((800, 800))
-
-# Classes
-pygame.display.set_caption("Chess.com")
 
 
 class GameState:
@@ -401,6 +397,8 @@ def main_menu():
                     main(False, None)
                 if button.text == "Credits":
                     doScreen("credits", window)
+                if button.text == "Lan Multiplayer":
+                    main_online_client()
                 if button.text == "Quit":
                     exit()
                 if button.text == "Load Game":
@@ -437,22 +435,38 @@ def deserialize_from_json(json_data):
 
 
 def main_online_client():
-    serverIp = input()
+    freeMove = False
+    serverIp = "127.0.0.1"
+    entityList = None
     if entityList == None:
         entityList = []
         entityList = setUpBoard(entityList)
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     if input("1 or 2") == "1":
-        serverSocket.connect(serverIp, 61292)
-    if input("1 or 2") == "2":
-        serverSocket.connect(serverIp, 61293)
+        playerID = 0
+    else:
+        playerID = 1
+    serverSocket.connect((serverIp, 61292))
     lastEntity = None
     program_radi = True
     spots = None
     cooldownInit = 30
     cooldown = cooldownInit
     turnNo = 1
+    string = ""
+    if playerID == 0:
+        string = "BLACK"
+    else:
+        string = "WHITE"
+    pygame.display.set_caption(f"Online client {string}")
     while program_radi:
+        if turnNo % 2 != playerID:
+            crtaj_tablu(window)
+            for entity in entityList:
+                entity.draw(window)
+            pygame.display.flip()
+            continue
+
         crtaj_tablu(window)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -465,6 +479,9 @@ def main_online_client():
             entityClickedOn = spotOccupied(tilePos[0], tilePos[1], entityList)[1]
             if entityClickedOn != None:
                 cooldown = cooldownInit
+                if lastEntity == None:
+                    if playerID - 1 == entityClickedOn.color:
+                        entityClickedOn = None
             if entityClickedOn != None and lastEntity == entityClickedOn:
                 entityClickedOn = None
                 lastEntity = None
@@ -473,33 +490,11 @@ def main_online_client():
             if spots != None:
                 print("Clickeeeeeed")
                 if lastEntity != None:
-                    if turnNo % 2 == lastEntity.color:
-                        if res[0] == True:
-                            if res[1] != None:
-                                if res[1].color != lastEntity.color:
-                                    if tilePos in spots:
-                                        serverSocket.send(
-                                            serialize_to_json(
-                                                lastEntity.x,
-                                                lastEntity.y,
-                                                tilePos[0],
-                                                tilePos[1],
-                                            )
-                                        )
-
-                                        lastEntity.move(tilePos)
-                                        change = 1
-                                        turnNo += 1
-                                        entityList.remove(entityClickedOn)
-                                        entityClickedOn = None
-                                        lastEntity = None
-                                        print("Moved")
-                                        spots = None
-                                        mouseB = False
-                                        continue
-                        else:
+                    if res[0] == True:
+                        if res[1] != None:
                             if tilePos in spots:
-                                print("Moved 2")
+                                if lastEntity.color != playerID:
+                                    continue
                                 serverSocket.send(
                                     serialize_to_json(
                                         lastEntity.x,
@@ -508,10 +503,42 @@ def main_online_client():
                                         tilePos[1],
                                     )
                                 )
-                                lastEntity.move(tilePos)
+                                rres = serverSocket.recv(4096)
+                                try:
+                                    res = rres.decode()
+                                    print(res)
+                                    a = 2
+                                except:
+                                    print("Couldnt decode")
+                                    print(rres[0])
+                                    a = 2
+                                entityList = jsonDecoder()
+
                                 change = 1
                                 turnNo += 1
+                                entityList.remove(entityClickedOn)
+                                entityClickedOn = None
+                                lastEntity = None
+                                print("Moved")
                                 spots = None
+                                mouseB = False
+                                continue
+                    else:
+                        if tilePos in spots:
+                            print("Moved 2")
+                            serverSocket.send(
+                                serialize_to_json(
+                                    lastEntity.x,
+                                    lastEntity.y,
+                                    tilePos[0],
+                                    tilePos[1],
+                                ).encode()
+                            )
+                            print("Successfully sent")
+                            lastEntity.move(tilePos)
+                            change = 1
+                            turnNo += 1
+                            spots = None
                 else:
                     print("None")
 
@@ -549,6 +576,70 @@ def main_online_client():
             drawSpots(spots, window)
         pygame.display.flip()
         cooldown -= 1
+
+
+def jsonSerializer(object):
+    resList = {
+        "type": object.strType,
+        "x": object.x,
+        "y": object.y,
+        "color": object.color,
+    }
+    return resList
+
+
+def main_server_mode():
+    offline = False
+    if offline == False:
+        server1_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server1_socket.bind(("0.0.0.0", 61292))
+        a = input("Proceed")
+        server1_socket.listen(10)
+
+        client1_socket, client1_address = server1_socket.accept()
+        print("got client 1")
+        client2_socket, client2_address = server1_socket.accept()
+        print("got client 2")
+
+    entityList = setUpBoard([])
+    turnNo = 1
+    while True:
+        print("in this loop")
+        if turnNo % 2 == 0:
+            playerInput = client1_socket.recvfrom(4096)[0]
+        else:
+            playerInput = client2_socket.recvfrom(4096)[0]
+        print("Got stuff")
+        b = deserialize_from_json(playerInput)
+        x = b[0]
+        y = b[1]
+        x1 = b[2]
+        y1 = b[3]
+
+        entityClickedOn = spotOccupied(x, y, entityList)[1]
+        spots = possibleSpots(entityClickedOn, entityList)
+        if [x1, y1] in spots:
+            entityClickedOn.move([x1, y1])
+            dataList = []
+            for entity in entityList:
+                data = jsonSerializer(entity)
+                dataList.append(data)
+            turnNo += 1
+            info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
+            json_object = json.dumps(info, indent=4)
+            print("Moved")
+            server1_socket.sendall(json_object)
+        else:
+            info = {"GameState": None, "TurnNo": turnNo, "Validity": False}
+            json_object = json.dumps(info, indent=4)
+            print("Moved")
+            server1_socket.sendall(json_object)
+            print("Illegal move")
+
+        # crtaj_tablu(window)
+        # for entity in entityList:
+        #    entity.draw(window)
+        # pygame.display.flip()
 
 
 def main(freeMove, entityList):
@@ -643,39 +734,13 @@ def main(freeMove, entityList):
         cooldown -= 1
 
 
-def main_server_mode():
+a = input("Server?")
+if a == "yes":
+    main_server_mode()
 
-    server1_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server2_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    player1IP = input("Enter player 1s ip address.")
-    player2IP = input("Enter player 2s ip address.")
-    server1_socket.bind("0.0.0.0", 61292)
-    server2_socket.bind("0.0.0.0", 61293)
-    client1_socket, client1_address = server1_socket.accept()
-    client2_socket, client2_address = server2_socket.accept()
+window = pygame.display.set_mode((800, 800))
 
-    entityList = setUpBoard([])
-    turnNo = 1
-    while True:
-        if turnNo % 2 == 0:
-            playerInput = input()  # [[x,y] to [x1,y1]]
-        else:
-            playerInput = input()
-        x = int(playerInput.split(",")[0])
-        y = int(playerInput.split(",")[1])
-        x1 = int(playerInput.split(",")[2])
-        y1 = int(playerInput.split(",")[3])
-
-        entityClickedOn = spotOccupied(x, y, entityList)[1]
-        spots = possibleSpots(entityClickedOn, entityList)
-        if [x1, y1] in spots:
-            entityClickedOn.move([x1, y1])
-            print("Moved")
-        else:
-            print("Illegal move")
-
-
-main_server_mode()
-
+# Classes
+pygame.display.set_caption("Chess.com")
 main_menu()
 main(True, entityList)
