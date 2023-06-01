@@ -10,10 +10,12 @@ class Queen:
         self.x = x
         self.y = y
         self.color = color
+        self.moves = 0
 
     def move(self, coords):
         self.x = coords[0]
         self.y = coords[1]
+        self.moves += 1
 
     def draw(self, window):
         if self.color == 0:

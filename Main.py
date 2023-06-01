@@ -268,7 +268,7 @@ def setUpBoard(entityList):
     return entityList
 
 
-def createObject(strType, pos, color):
+def createObject(strType, pos, color, moves):
     if strType == "None":
         return "Error"
     if strType == "Remove":
@@ -297,7 +297,9 @@ def select_file():
 
 
 def jsonDecoder(data):
-    obj = createObject(data["type"], [data["x"], data["y"]], data["color"])
+    obj = createObject(
+        data["type"], [data["x"], data["y"]], data["color"], data["moves"]
+    )
     return obj
 
 
@@ -305,6 +307,8 @@ def jsonDecoderBig(data):
     print(data.decode())
     data = json.loads(data.decode())
     gamestate = data["GameState"]
+    if gamestate == None:
+        return None
     rL = []
     for item in gamestate:
         obj = jsonDecoder(item)
@@ -524,7 +528,8 @@ def main_online_client():
             except:
                 print("Couldnt decode AWAKENING")
                 print(rres[0])
-                entityList = jsonDecoderBig(rres)
+                if jsonDecoderBig(rres) != None:
+                    entityList = jsonDecoderBig(rres)
                 a = 2
                 turnNo = json.loads(rres.decode())["TurnNo"]
 
@@ -636,6 +641,7 @@ def jsonSerializer(object):
         "x": object.x,
         "y": object.y,
         "color": object.color,
+        "moves": object.moves,
     }
     return resList
 
@@ -659,8 +665,11 @@ def main_server_mode():
         print("in this loop")
         if turnNo % 2 == 0:
             playerInput = client1_socket.recvfrom(4096)[0].decode()
+            print("Client 1 input")
         else:
             playerInput = client2_socket.recvfrom(4096)[0].decode()
+            print("Client 2 input")
+
         print("Got stuff")
         b = deserialize_from_json(playerInput)
         if b == "WHY":
@@ -698,7 +707,10 @@ def main_server_mode():
             if json_object.encode() == b"":
                 print(" ILLEGAL MOVE BUG")
                 a = 2
-            server1_socket.sendall(json_object.encode())
+            if turnNo % 2 == 0:
+                client1_socket.sendall(json_object.encode())
+            else:
+                client2_socket.sendall(json_object.encode())
             print("Illegal move")
 
         # crtaj_tablu(window)

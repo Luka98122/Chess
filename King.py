@@ -13,10 +13,12 @@ class King:
         self.y = y
         self.color = color
         self.timeChecked = 0
+        self.moves = 0
 
     def move(self, coords):
         self.x = coords[0]
         self.y = coords[1]
+        self.moves += 1
 
     def draw(self, window):
         self.window = window
