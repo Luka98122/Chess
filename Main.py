@@ -413,6 +413,27 @@ def main_menu():
                 if button.text == "Credits":
                     doScreen("credits", window)
                 if button.text == "Lan Multiplayer":
+                    buttons = []
+                    white = Button(pygame.Rect(50, 250, 250, 100), "White", 35)
+                    black = Button(pygame.Rect(500, 250, 250, 100), "Black", 35)
+                    server = Button(pygame.Rect(275, 450, 250, 100), "Server", 35)
+                    buttons.append(server)
+                    buttons.append(white)
+                    buttons.append(black)
+                    while True:
+                        crtaj_tablu(window)
+                        for button in buttons:
+                            button.draw(window)
+                            if button.update() == True:
+                                if button.text == "White":
+                                    main_online_client(1)
+                                if button.text == "Black":
+                                    main_online_client(0)
+                                if button.text == "Server":
+                                    pygame.display.quit()
+                                    main_server_mode()
+                        pygame.display.flip()
+
                     main_online_client()
                 if button.text == "Quit":
                     exit()
@@ -451,18 +472,12 @@ def deserialize_from_json(json_data):
     return x, y, x1, y1
 
 
-def main_online_client():
+def main_online_client(playerID):
     freeMove = False
     serverIp = "127.0.0.1"
-    entityList = None
-    if entityList == None:
-        entityList = []
-        entityList = setUpBoard(entityList)
+    entityList = []
+    entityList = setUpBoard(entityList)
     serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    if input("1 or 2") == "1":
-        playerID = 0
-    else:
-        playerID = 1
     serverSocket.connect((serverIp, 61292))
     lastEntity = None
     program_radi = True
@@ -521,6 +536,35 @@ def main_online_client():
             rres = serverSocket.recv(4096)
             try:
                 res = rres.decode()
+                if res == str(playerID):
+                    buttons = []
+                    fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU WON", 45)
+                    backToMenu = Button(
+                        pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
+                    )
+                    buttons.append(backToMenu)
+                    buttons.append(fakeButton)
+                    while True:
+                        darkenScreen()
+                        fakeButton.draw()
+                        backToMenu.draw()
+                        if backToMenu.update() == True:
+                            main_menu()
+                if res != str(playerID) and res in ["0", "1"]:
+                    buttons = []
+                    fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU LOST", 45)
+                    backToMenu = Button(
+                        pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
+                    )
+                    buttons.append(backToMenu)
+                    buttons.append(fakeButton)
+                    while True:
+                        darkenScreen()
+                        fakeButton.draw()
+                        backToMenu.draw()
+                        if backToMenu.update() == True:
+                            main_menu()
+
                 print(res)
                 entityList = jsonDecoder(res[0].decode())
                 a = 2
@@ -651,7 +695,6 @@ def main_server_mode():
     if offline == False:
         server1_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server1_socket.bind(("0.0.0.0", 61292))
-        a = input("Proceed")
         server1_socket.listen(10)
 
         client1_socket, client1_address = server1_socket.accept()
@@ -660,6 +703,7 @@ def main_server_mode():
         print("got client 2")
 
     entityList = setUpBoard([])
+
     turnNo = 1
     while True:
         print("in this loop")
@@ -683,9 +727,26 @@ def main_server_mode():
         entityClickedOn = spotOccupied(x, y, entityList)[1]
         spots = possibleSpots(entityClickedOn, entityList)
         if [x1, y1] in spots:
+            print("Valid move")
             if spotOccupied(x1, y1, entityList)[0] == True:
                 del entityList[entityList.index(spotOccupied(x1, y1, entityList)[1])]
             entityClickedOn.move([x1, y1])
+            foundKings = []
+            for entity in entityList:
+                if type(entity) == King:
+                    foundKings.append(entity)
+            print("Found kings")
+            if len(foundKings) == 1:
+                # Somebody won
+                if foundKings[0].color == 0:
+                    client1_socket.sendall("0".encode())
+                    client2_socket.sendall("0".encode())
+                    print("A winner has been found")
+                else:
+                    client1_socket.sendall("1".encode())
+                    client2_socket.sendall("1".encode())
+                    print("A winner has been found")
+            print("Checked for winners")
             dataList = []
             for entity in entityList:
                 data = jsonSerializer(entity)
@@ -701,6 +762,7 @@ def main_server_mode():
             client2_socket.sendall(json_object.encode())
 
         else:
+            print("Invalid move")
             info = {"GameState": None, "TurnNo": turnNo, "Validity": False}
             json_object = json.dumps(info, indent=4)
             print("Moved")
@@ -811,11 +873,11 @@ def main(freeMove, entityList):
         cooldown -= 1
 
 
-a = input("Server?")
-if a == "yes":
-    main_server_mode()
-
 window = pygame.display.set_mode((800, 800))
+
+# a = input("Server?")
+# if a == "yes":
+#    main_server_mode()
 
 # Classes
 pygame.display.set_caption("Chess.com")
