@@ -22,7 +22,7 @@ class King:
 
     def draw(self, window):
         self.window = window
-        if self.color == 0:
+        if self.color == 1:
             img = self.BlackKing
         else:
             img = self.WhiteKing

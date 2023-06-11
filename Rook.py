@@ -18,7 +18,7 @@ class Rook:
         self.moves += 1
 
     def draw(self, window):
-        if self.color == 0:
+        if self.color == 1:
             img = self.BlackRook
         else:
             img = self.WhiteRook

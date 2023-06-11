@@ -56,9 +56,9 @@ def possibleSpots(entity, entityList):
     spots = []
     if type(entity) == Pawn:
         if entity.color == 0:
-            direction = -1
-        if entity.color == 1:
             direction = 1
+        if entity.color == 1:
+            direction = -1
         if spotOccupied(entity.x, entity.y + direction, entityList)[0] == False:
             spots.append([entity.x, entity.y + direction])
         if (
@@ -218,10 +218,10 @@ def canKingGoHere(x, y, king, entityList):
 
 def setUpPawns(entityList):
     for i in range(8):
-        pawn = Pawn(i, 1, 1)
+        pawn = Pawn(i, 1, 0)
         entityList.append(pawn)
     for i in range(8):
-        pawn = Pawn(i, 6, 0)
+        pawn = Pawn(i, 6, 1)
         entityList.append(pawn)
     return entityList
 
@@ -229,38 +229,38 @@ def setUpPawns(entityList):
 def setUpBoard(entityList):
     entityList = setUpPawns(entityList)
     # Rooks
-    rook1 = Rook(0, 0, 1)
-    rook2 = Rook(7, 0, 1)
-    rook3 = Rook(0, 7, 0)
-    rook4 = Rook(7, 7, 0)
+    rook1 = Rook(0, 0, 0)
+    rook2 = Rook(7, 0, 0)
+    rook3 = Rook(0, 7, 1)
+    rook4 = Rook(7, 7, 1)
     entityList.append(rook1)
     entityList.append(rook2)
     entityList.append(rook3)
     entityList.append(rook4)
     # Bishops
-    b1 = Knight(1, 0, 1)
-    b2 = Knight(6, 0, 1)
-    b3 = Knight(1, 7, 0)
-    b4 = Knight(6, 7, 0)
+    b1 = Knight(1, 0, 0)
+    b2 = Knight(6, 0, 0)
+    b3 = Knight(1, 7, 1)
+    b4 = Knight(6, 7, 1)
     entityList.append(b1)
     entityList.append(b2)
     entityList.append(b3)
     entityList.append(b4)
     # Queens
-    q1 = Queen(3, 0, 1)
-    q2 = Queen(3, 7, 0)
+    q1 = Queen(3, 0, 0)
+    q2 = Queen(3, 7, 1)
     entityList.append(q1)
     entityList.append(q2)
     # Kings
-    k1 = King(4, 0, 1)
-    k2 = King(4, 7, 0)
+    k1 = King(4, 0, 0)
+    k2 = King(4, 7, 1)
     entityList.append(k1)
     entityList.append(k2)
     # Knights
-    kn1 = Bishop(2, 0, 1)
-    kn2 = Bishop(5, 0, 1)
-    kn3 = Bishop(5, 7, 0)
-    kn4 = Bishop(2, 7, 0)
+    kn1 = Bishop(2, 0, 0)
+    kn2 = Bishop(5, 0, 0)
+    kn3 = Bishop(5, 7, 1)
+    kn4 = Bishop(2, 7, 1)
     entityList.append(kn1)
     entityList.append(kn2)
     entityList.append(kn3)
@@ -285,6 +285,7 @@ def createObject(strType, pos, color, moves):
         obj = Queen(pos[0], pos[1], color)
     if strType == "king":
         obj = King(pos[0], pos[1], color)
+    obj.moves = moves
     return obj
 
 
@@ -401,55 +402,61 @@ def main_menu():
     listOfButtons.append(playButton)
     playButton = Button(pygame.Rect(300, 650, 200, 100), "Quit", 25)
     listOfButtons.append(playButton)
-
+    pressedOnEntry = False
+    allowClicks = True
+    if pygame.mouse.get_pressed()[0] == True:
+        pressedOnEntry = True
+        allowClicks = False
     while True:
         window.fill("Black")
-
+        if pressedOnEntry == True:
+            if pygame.mouse.get_pressed()[0] == False:
+                allowClicks = True
         for button in listOfButtons:
-            res = button.update()
-            if res == True:
-                if button.text == "Play Shared Computer":
-                    main(False, None)
-                if button.text == "Credits":
-                    doScreen("credits", window)
-                if button.text == "Lan Multiplayer":
-                    buttons = []
-                    white = Button(pygame.Rect(50, 250, 250, 100), "White", 35)
-                    black = Button(pygame.Rect(500, 250, 250, 100), "Black", 35)
-                    server = Button(pygame.Rect(275, 450, 250, 100), "Server", 35)
-                    buttons.append(server)
-                    buttons.append(white)
-                    buttons.append(black)
-                    while True:
-                        crtaj_tablu(window)
-                        for button in buttons:
-                            button.draw(window)
-                            if button.update() == True:
-                                if button.text == "White":
-                                    main_online_client(1)
-                                if button.text == "Black":
-                                    main_online_client(0)
-                                if button.text == "Server":
-                                    pygame.display.quit()
-                                    main_server_mode()
-                        pygame.display.flip()
+            if allowClicks == True:
+                res = button.update()
+                if res == True:
+                    if button.text == "Play Shared Computer":
+                        main(False, None)
+                    if button.text == "Credits":
+                        doScreen("credits", window)
+                    if button.text == "Lan Multiplayer":
+                        buttons = []
+                        white = Button(pygame.Rect(50, 250, 250, 100), "White", 35)
+                        black = Button(pygame.Rect(500, 250, 250, 100), "Black", 35)
+                        server = Button(pygame.Rect(275, 450, 250, 100), "Server", 35)
+                        buttons.append(server)
+                        buttons.append(white)
+                        buttons.append(black)
+                        while True:
+                            crtaj_tablu(window)
+                            for button in buttons:
+                                button.draw(window)
+                                if button.update() == True:
+                                    if button.text == "White":
+                                        main_online_client(0)
+                                    if button.text == "Black":
+                                        main_online_client(1)
+                                    if button.text == "Server":
+                                        pygame.display.quit()
+                                        main_server_mode()
+                            pygame.display.flip()
 
-                    main_online_client()
-                if button.text == "Quit":
-                    exit()
-                if button.text == "Load Game":
-                    root = tk.Tk()
-                    root.withdraw()
-                    path = select_file()
-                    if path not in [None, ""]:
-                        entityList = load_file(path)
-                        main(False, entityList)
-                    else:
-                        return
+                    if button.text == "Quit":
+                        exit()
+                    if button.text == "Load Game":
+                        root = tk.Tk()
+                        root.withdraw()
+                        path = select_file()
+                        if path not in [None, ""]:
+                            entityList = load_file(path)
+                            main(False, entityList)
+                        else:
+                            return
 
         for button in listOfButtons:
             button.draw(window)
-
+        pygame.event.pump()
         pygame.display.flip()
 
 
@@ -484,29 +491,9 @@ def main_online_client(playerID):
     spots = None
     cooldownInit = 30
     cooldown = cooldownInit
-    turnNo = 1
+    turnNo = 0
     string = ""
     if playerID == 0:
-        string = "BLACK"
-        print(
-            "__________.__                 __        _________ .____    .______________ __________________"
-        )
-        print(
-            "\______   \  | _____    ____ |  | __    \_   ___ \|    |   |   \_   _____/ \      \__    ___/"
-        )
-        print(
-            " |    |  _/  | \__  \ _/ ___\|  |/ /    /    \  \/|    |   |   ||    __)_  /   |   \|    |   "
-        )
-        print(
-            " |    |   \  |__/ __ \\  \___|    <     \     \___|    |___|   ||        \/    |    \    |   "
-        )
-        print(
-            " |______  /____(____  /\___  >__|_ \     \______  /_______ \___/_______  /\____|__  /____|   "
-        )
-        print(
-            "        \/          \/     \/     \/            \/        \/           \/         \/       "
-        )
-    else:
         string = "WHITE"
         print(
             " __      __.__    .__  __           _________ .____    .______________ __________________"
@@ -526,17 +513,40 @@ def main_online_client(playerID):
         print(
             "       \/       \/              \/          \/        \/           \/         \/        "
         )
+
+    else:
+        string = "BLACK"
+        print(
+            "__________.__                 __        _________ .____    .______________ __________________"
+        )
+        print(
+            "\______   \  | _____    ____ |  | __    \_   ___ \|    |   |   \_   _____/ \      \__    ___/"
+        )
+        print(
+            " |    |  _/  | \__  \ _/ ___\|  |/ /    /    \  \/|    |   |   ||    __)_  /   |   \|    |   "
+        )
+        print(
+            " |    |   \  |__/ __ \\  \___|    <     \     \___|    |___|   ||        \/    |    \    |   "
+        )
+        print(
+            " |______  /____(____  /\___  >__|_ \     \______  /_______ \___/_______  /\____|__  /____|   "
+        )
+        print(
+            "        \/          \/     \/     \/            \/        \/           \/         \/       "
+        )
     pygame.display.set_caption(f"Online client {string}")
+    print(f"{string} is COLOR {playerID}")
     while program_radi:
         if turnNo % 2 != playerID:
+            print("In limbo")
             crtaj_tablu(window)
             for entity in entityList:
                 entity.draw(window)
             pygame.display.flip()
-            rres = serverSocket.recv(4096)
+            rres = serverSocket.recv(20000)
             try:
                 res = rres.decode()
-                if res == str(playerID):
+                if res[0] == str(playerID):
                     buttons = []
                     fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU WON", 45)
                     backToMenu = Button(
@@ -548,9 +558,10 @@ def main_online_client(playerID):
                         darkenScreen()
                         fakeButton.draw()
                         backToMenu.draw()
+                        pygame.display.flip()
                         if backToMenu.update() == True:
                             main_menu()
-                if res != str(playerID) and res in ["0", "1"]:
+                elif res[0] != str(playerID) and res[0] in ["0", "1"]:
                     buttons = []
                     fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU LOST", 45)
                     backToMenu = Button(
@@ -562,24 +573,56 @@ def main_online_client(playerID):
                         darkenScreen()
                         fakeButton.draw()
                         backToMenu.draw()
+                        pygame.display.flip()
                         if backToMenu.update() == True:
                             main_menu()
-
-                print(res)
-                entityList = jsonDecoder(res[0].decode())
-                a = 2
-                turnNo = res[0].decode()["TurnNo"]
+                else:
+                    print(res)
+                    entityList = jsonDecoder(res[0].decode())
+                    a = 2
+                    if backToMenu.update() == True:
+                        main_menu()
+                    turnNo = res[0].decode()["TurnNo"]
             except:
                 print("Couldnt decode AWAKENING")
                 print(rres[0])
+                if res[0] == str(playerID):
+                    buttons = []
+                    fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU WON", 45)
+                    backToMenu = Button(
+                        pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
+                    )
+                    buttons.append(backToMenu)
+                    buttons.append(fakeButton)
+                    while True:
+                        darkenScreen()
+                        fakeButton.draw(window)
+                        backToMenu.draw(window)
+                        pygame.display.flip()
+                        if backToMenu.update() == True:
+                            main_menu()
+                elif res[0] != str(playerID) and res[0] in [0, 1]:
+                    buttons = []
+                    fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU LOST", 45)
+                    backToMenu = Button(
+                        pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
+                    )
+                    buttons.append(backToMenu)
+                    buttons.append(fakeButton)
+                    while True:
+                        darkenScreen()
+                        fakeButton.draw()
+                        backToMenu.draw()
+                        pygame.display.flip()
                 if jsonDecoderBig(rres) != None:
                     entityList = jsonDecoderBig(rres)
                 a = 2
                 turnNo = json.loads(rres.decode())["TurnNo"]
+                print("End of exception")
 
             continue
-
         crtaj_tablu(window)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 program_radi = False
@@ -590,11 +633,14 @@ def main_online_client(playerID):
             tilePos = getTileClickedOn(mousePos)
             entityClickedOn = spotOccupied(tilePos[0], tilePos[1], entityList)[1]
             if entityClickedOn != None:
+                print("Got something")
                 cooldown = cooldownInit
                 if lastEntity == None:
-                    if playerID - 1 == entityClickedOn.color:
+                    if playerID != entityClickedOn.color:
+                        print("Got set to invalid")
                         entityClickedOn = None
             if entityClickedOn != None and lastEntity == entityClickedOn:
+                print("Nulled out")
                 entityClickedOn = None
                 lastEntity = None
                 spots = None
@@ -645,12 +691,15 @@ def main_online_client(playerID):
 
             print("got clicked")
             if entityClickedOn == None:
-                print("none type")
+                print("It was None?")
                 pass
             else:
                 lastEntity = entityClickedOn
-                if turnNo % 2 == lastEntity.color or freeMove:
+                if playerID == entityClickedOn.color or freeMove:
                     spots = possibleSpots(entityClickedOn, entityList)
+                    for i in range(10):
+                        print("SPOTSSSSSSSSSSSSSSS")
+
         flagVar = 0
 
         # Drawing
@@ -675,6 +724,8 @@ def main_online_client(playerID):
             change = 0
         if spots != None:
             drawSpots(spots, window)
+            print("Drew these")
+            pygame.display.flip()
         pygame.display.flip()
         cooldown -= 1
 
@@ -704,14 +755,14 @@ def main_server_mode():
 
     entityList = setUpBoard([])
 
-    turnNo = 1
+    turnNo = 0
     while True:
         print("in this loop")
         if turnNo % 2 == 0:
-            playerInput = client1_socket.recvfrom(4096)[0].decode()
+            playerInput = client1_socket.recvfrom(20000)[0].decode()
             print("Client 1 input")
         else:
-            playerInput = client2_socket.recvfrom(4096)[0].decode()
+            playerInput = client2_socket.recvfrom(20000)[0].decode()
             print("Client 2 input")
 
         print("Got stuff")
@@ -742,10 +793,13 @@ def main_server_mode():
                     client1_socket.sendall("0".encode())
                     client2_socket.sendall("0".encode())
                     print("A winner has been found")
+                    exit()
+
                 else:
                     client1_socket.sendall("1".encode())
                     client2_socket.sendall("1".encode())
                     print("A winner has been found")
+                    exit()
             print("Checked for winners")
             dataList = []
             for entity in entityList:
@@ -790,7 +844,7 @@ def main(freeMove, entityList):
     spots = None
     cooldownInit = 30
     cooldown = cooldownInit
-    turnNo = 1
+    turnNo = 0
     while program_radi:
         crtaj_tablu(window)
         for event in pygame.event.get():
@@ -875,9 +929,6 @@ def main(freeMove, entityList):
 
 window = pygame.display.set_mode((800, 800))
 
-# a = input("Server?")
-# if a == "yes":
-#    main_server_mode()
 
 # Classes
 pygame.display.set_caption("Chess.com")

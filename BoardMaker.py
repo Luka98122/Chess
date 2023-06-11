@@ -71,6 +71,7 @@ def jsonSerializer(object):
         "x": object.x,
         "y": object.y,
         "color": object.color,
+        "moves": object.moves,
     }
     return resList
 

@@ -18,7 +18,7 @@ class Bishop:
         self.moves += 1
 
     def draw(self, window):
-        if self.color == 0:
+        if self.color == 1:
             img = self.BlackBishop
         else:
             img = self.WhiteBishop
