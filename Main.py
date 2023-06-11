@@ -544,85 +544,48 @@ def main_online_client(playerID):
                 entity.draw(window)
             pygame.display.flip()
             rres = serverSocket.recv(20000)
-            try:
-                res = rres.decode()
-                if res[0] == str(playerID):
-                    buttons = []
-                    fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU WON", 45)
-                    backToMenu = Button(
-                        pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
-                    )
-                    buttons.append(backToMenu)
-                    buttons.append(fakeButton)
-                    while True:
-                        darkenScreen()
-                        fakeButton.draw()
-                        backToMenu.draw()
-                        pygame.display.flip()
-                        if backToMenu.update() == True:
-                            main_menu()
-                elif res[0] != str(playerID) and res[0] in ["0", "1"]:
-                    buttons = []
-                    fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU LOST", 45)
-                    backToMenu = Button(
-                        pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
-                    )
-                    buttons.append(backToMenu)
-                    buttons.append(fakeButton)
-                    while True:
-                        darkenScreen()
-                        fakeButton.draw()
-                        backToMenu.draw()
-                        pygame.display.flip()
-                        if backToMenu.update() == True:
-                            main_menu()
-                else:
-                    print(res)
-                    entityList = jsonDecoder(res[0].decode())
-                    a = 2
+            res = rres.decode()
+            print("Couldnt decode AWAKENING")
+            print(rres[0])
+            if len(res) == 1:
+                a = 2
+            if res[0] == str(playerID):
+                serverSocket.close()
+                buttons = []
+                fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU WON", 45)
+                backToMenu = Button(
+                    pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
+                )
+                buttons.append(backToMenu)
+                buttons.append(fakeButton)
+                while True:
+                    darkenScreen()
+                    fakeButton.draw(window)
+                    backToMenu.draw(window)
+                    pygame.display.flip()
                     if backToMenu.update() == True:
                         main_menu()
-                    turnNo = res[0].decode()["TurnNo"]
-            except:
-                print("Couldnt decode AWAKENING")
-                print(rres[0])
-                if len(res) == 1:
-                    a = 2
-                if res[0] == str(playerID):
-                    buttons = []
-                    fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU WON", 45)
-                    backToMenu = Button(
-                        pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
-                    )
-                    buttons.append(backToMenu)
-                    buttons.append(fakeButton)
-                    while True:
-                        darkenScreen()
-                        fakeButton.draw(window)
-                        backToMenu.draw(window)
-                        pygame.display.flip()
-                        if backToMenu.update() == True:
-                            main_menu()
-                elif res[0] != str(playerID) and res[0] in ["0", "1"]:
-                    buttons = []
-                    fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU LOST", 45)
-                    backToMenu = Button(
-                        pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
-                    )
-                    buttons.append(backToMenu)
-                    buttons.append(fakeButton)
-                    while True:
-                        darkenScreen()
-                        fakeButton.draw(window)
-                        backToMenu.draw(window)
-                        pygame.display.flip()
-                        if backToMenu.update() == True:
-                            main_menu()
-                if jsonDecoderBig(rres) != None:
-                    entityList = jsonDecoderBig(rres)
-                a = 2
-                turnNo = json.loads(rres.decode())["TurnNo"]
-                print("End of exception")
+            elif res[0] != str(playerID) and res[0] in ["0", "1"]:
+                serverSocket.close()
+                buttons = []
+                fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU LOST", 45)
+                backToMenu = Button(
+                    pygame.Rect(300, 500, 200, 100), "Back to Main Menu", 20
+                )
+                buttons.append(backToMenu)
+                buttons.append(fakeButton)
+                while True:
+                    darkenScreen()
+                    fakeButton.draw(window)
+                    backToMenu.draw(window)
+                    pygame.display.flip()
+                    if backToMenu.update() == True:
+                        main_menu()
+            if jsonDecoderBig(rres) != None:
+                entityList = jsonDecoderBig(rres)
+            a = 2
+            turnNo = json.loads(rres.decode())["TurnNo"]
+            print("End of exception")
 
             continue
         crtaj_tablu(window)
@@ -796,12 +759,17 @@ def main_server_mode():
                 if foundKings[0].color == 0:
                     client1_socket.sendall("0".encode())
                     client2_socket.sendall("0".encode())
+                    client1_socket.close()
+                    client2_socket.close()
                     print("A winner has been found")
                     exit()
 
                 else:
                     client1_socket.sendall("1".encode())
                     client2_socket.sendall("1".encode())
+                    client1_socket.close()
+                    client2_socket.close()
+
                     print("A winner has been found")
                     exit()
             print("Checked for winners")
