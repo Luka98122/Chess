@@ -586,6 +586,8 @@ def main_online_client(playerID):
             except:
                 print("Couldnt decode AWAKENING")
                 print(rres[0])
+                if len(res) == 1:
+                    a = 2
                 if res[0] == str(playerID):
                     buttons = []
                     fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU WON", 45)
@@ -601,7 +603,7 @@ def main_online_client(playerID):
                         pygame.display.flip()
                         if backToMenu.update() == True:
                             main_menu()
-                elif res[0] != str(playerID) and res[0] in [0, 1]:
+                elif res[0] != str(playerID) and res[0] in ["0", "1"]:
                     buttons = []
                     fakeButton = Button(pygame.Rect(300, 50, 200, 100), "YOU LOST", 45)
                     backToMenu = Button(
@@ -611,9 +613,11 @@ def main_online_client(playerID):
                     buttons.append(fakeButton)
                     while True:
                         darkenScreen()
-                        fakeButton.draw()
-                        backToMenu.draw()
+                        fakeButton.draw(window)
+                        backToMenu.draw(window)
                         pygame.display.flip()
+                        if backToMenu.update() == True:
+                            main_menu()
                 if jsonDecoderBig(rres) != None:
                     entityList = jsonDecoderBig(rres)
                 a = 2
