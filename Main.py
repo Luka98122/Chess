@@ -14,11 +14,14 @@ from Bishop import *
 from Knight import *
 from Queen import *
 from King import *
-
+from globals import *
 from HelperFunctions import *
 from MovingText import *
 
 pygame.init()
+
+
+window = pygame.display.set_mode((globals.windowLength, globals.windowHeight))
 
 
 class GameState:
@@ -367,6 +370,20 @@ def checkOnKing(king, entityList):
             exit()
 
 
+# Player 0
+# receiver 60292
+# sender 60293
+
+# Player 1
+# receiver 60294
+# sender 60295
+
+
+def chatReceiver():
+    receiveSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    receiveSocket.bind(60292)
+
+
 # Main
 
 
@@ -491,6 +508,7 @@ def main_online_client(playerID):
     spots = None
     cooldownInit = 30
     cooldown = cooldownInit
+    window = pygame.display.set_mode((950, 800))
     turnNo = 0
     string = ""
     if playerID == 0:
@@ -897,9 +915,6 @@ def main(freeMove, entityList):
             drawSpots(spots, window)
         pygame.display.flip()
         cooldown -= 1
-
-
-window = pygame.display.set_mode((800, 800))
 
 
 # Classes
