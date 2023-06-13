@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import filedialog
 import json
 import socket
-
+import threading
 
 from copy import *
 from Pawn import *
@@ -17,6 +17,8 @@ from King import *
 from globals import *
 from HelperFunctions import *
 from MovingText import *
+from textTest import *
+from chatClient import *
 
 pygame.init()
 
@@ -372,16 +374,8 @@ def checkOnKing(king, entityList):
 
 # Player 0
 # receiver 60292
-# sender 60293
 
-# Player 1
-# receiver 60294
-# sender 60295
-
-
-def chatReceiver():
-    receiveSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    receiveSocket.bind(60292)
+# sendto 60293
 
 
 # Main
@@ -473,7 +467,7 @@ def main_menu():
 
         for button in listOfButtons:
             button.draw(window)
-        pygame.event.pump()
+
         pygame.display.flip()
 
 
@@ -510,7 +504,24 @@ def main_online_client(playerID):
     cooldown = cooldownInit
     window = pygame.display.set_mode((950, 800))
     turnNo = 0
+    chatBox = inputBox(pygame.Rect(800, 650, 200, 150))
     string = ""
+    # if playerID == 0:
+    #    me = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #    me.bind(("127.0.0.1", 62292))
+    #    print("binded")
+    #    me.listen(10)
+    #    them, adr = me.accept()
+    #    print("received")
+    #    chat = chatClient(them)
+    # else:
+    #    them = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #    them.bind(("127.0.0.1", 62293))
+    #    print("bouta connect")
+    #    them.connect(("127.0.0.1", 62292))
+    #    print("connected")
+    #    chat = chatClient(them)
+    chat = chatClient(serverSocket)
     if playerID == 0:
         string = "WHITE"
         print(
@@ -554,16 +565,23 @@ def main_online_client(playerID):
         )
     pygame.display.set_caption(f"Online client {string}")
     print(f"{string} is COLOR {playerID}")
+    serverSocket.settimeout(2.0)
     while program_radi:
+        window.fill("Black")
         if turnNo % 2 != playerID:
             print("In limbo")
             crtaj_tablu(window)
             for entity in entityList:
                 entity.draw(window)
             pygame.display.flip()
-            rres = serverSocket.recv(20000)
+            try:
+                rres = serverSocket.recv(20000)
+            except:
+                continue
+            if rres.decode().startswith("CHAT"):
+                chat.addRecv(rres.decode()[4:])
+                continue
             res = rres.decode()
-            print("Couldnt decode AWAKENING")
             print(rres[0])
             if len(res) == 1:
                 a = 2
@@ -607,8 +625,8 @@ def main_online_client(playerID):
 
             continue
         crtaj_tablu(window)
-
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 program_radi = False
         mouseB = pygame.mouse.get_pressed()
@@ -686,7 +704,11 @@ def main_online_client(playerID):
                         print("SPOTSSSSSSSSSSSSSSS")
 
         flagVar = 0
-
+        chatRes = chatBox.update(mouseB, events)
+        if chatRes != None:
+            chat.send(chatRes)
+        chatBox.draw(window)
+        chat.draw(window)
         # Drawing
         for entity in entityList:
             entity.draw(window)
@@ -710,7 +732,7 @@ def main_online_client(playerID):
         if spots != None:
             drawSpots(spots, window)
             print("Drew these")
-            pygame.display.flip()
+        pygame.event.pump()
         pygame.display.flip()
         cooldown -= 1
 
@@ -746,9 +768,19 @@ def main_server_mode():
         if turnNo % 2 == 0:
             playerInput = client1_socket.recvfrom(20000)[0].decode()
             print("Client 1 input")
+            if playerInput.startswith("CHAT"):
+                print("GOT CHAT")
+                client2_socket.sendall(playerInput.encode())
+                print("FORWARDED CHAT")
+                continue
         else:
             playerInput = client2_socket.recvfrom(20000)[0].decode()
             print("Client 2 input")
+            if playerInput.startswith("CHAT"):
+                print("GOT CHAT")
+                client1_socket.sendall(playerInput.encode())
+                print("FORWARDED CHAT")
+                continue
 
         print("Got stuff")
         b = deserialize_from_json(playerInput)
@@ -837,7 +869,8 @@ def main(freeMove, entityList):
     turnNo = 0
     while program_radi:
         crtaj_tablu(window)
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 program_radi = False
         mouseB = pygame.mouse.get_pressed()
@@ -918,6 +951,7 @@ def main(freeMove, entityList):
 
 
 # Classes
+
 pygame.display.set_caption("Chess.com")
 main_menu()
 main(True, entityList)
