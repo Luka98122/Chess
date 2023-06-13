@@ -571,8 +571,15 @@ def main_online_client(playerID):
         if turnNo % 2 != playerID:
             print("In limbo")
             crtaj_tablu(window)
+            events = pygame.event.get()
+            mouseB = pygame.mouse.get_pressed()
             for entity in entityList:
                 entity.draw(window)
+            chatRes = chatBox.update(mouseB, events)
+            if chatRes != None:
+                chat.send(chatRes)
+            chatBox.draw(window)
+            chat.draw(window)
             pygame.display.flip()
             try:
                 rres = serverSocket.recv(20000)
