@@ -500,13 +500,13 @@ def takeCareOfChat(chatObj: inputBox, chatBoxObj: chatClient, window):
 
 
 class Globals:
-    data = []
+    data = None
 
 
 def receive_messages(sock):
     while True:
         data, addr = sock.recvfrom(20000)
-        Globals.data.append(data)
+        Globals.data = data
 
 
 def main_online_client(playerID):
@@ -604,10 +604,10 @@ def main_online_client(playerID):
             chat.draw(window)
             pygame.display.flip()
             try:
-                if len(Globals.data) > 0:
-                    if lastRecv != Globals.data[-1]:
-                        rres = Globals.data[-1]
-                        lastRecv = Globals.data[-1]
+                if Globals.data != None:
+                    if lastRecv != Globals.data:
+                        rres = Globals.data
+                        lastRecv = Globals.data
                     else:
                         continue
                 else:
@@ -741,10 +741,10 @@ def main_online_client(playerID):
 
         flagVar = 0
         try:
-            if len(Globals.data) > 0:
-                if lastRecv != Globals.data[-1]:
-                    rres = Globals.data[-1]
-                    lastRecv = Globals.data[-1]
+            if Globals.data != None:
+                if lastRecv != Globals.data:
+                    rres = Globals.data
+                    lastRecv = Globals.data
                     if rres.decode().startswith("CHAT"):
                         chat.addRecv(rres.decode()[4:])
         except:
