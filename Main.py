@@ -490,6 +490,25 @@ def deserialize_from_json(json_data):
     return x, y, x1, y1
 
 
+def takeCareOfChat(chatObj: inputBox, chatBoxObj: chatClient, window):
+    while True:
+        chatRes = chatObj.update(pygame.mouse.get_pressed(), pygame.event.get())
+        if chatRes != None:
+            chatBoxObj.send(chatRes)
+        chatBoxObj.draw(window)
+        chatObj.draw(window)
+
+
+class Globals:
+    data = []
+
+
+def receive_messages(sock):
+    while True:
+        data, addr = sock.recvfrom(20000)
+        Globals.data.append(data)
+
+
 def main_online_client(playerID):
     freeMove = False
     serverIp = "127.0.0.1"
@@ -565,7 +584,10 @@ def main_online_client(playerID):
         )
     pygame.display.set_caption(f"Online client {string}")
     print(f"{string} is COLOR {playerID}")
-    serverSocket.settimeout(2.0)
+    # serverSocket.settimeout(2.0)
+    t = threading.Thread(target=receive_messages, args=[serverSocket])
+    t.start()
+    lastRecv = None
     while program_radi:
         window.fill("Black")
         if turnNo % 2 != playerID:
@@ -582,7 +604,14 @@ def main_online_client(playerID):
             chat.draw(window)
             pygame.display.flip()
             try:
-                rres = serverSocket.recv(20000)
+                if len(Globals.data) > 0:
+                    if lastRecv != Globals.data[-1]:
+                        rres = Globals.data[-1]
+                        lastRecv = Globals.data[-1]
+                    else:
+                        continue
+                else:
+                    continue
             except:
                 continue
             if rres.decode().startswith("CHAT"):
@@ -711,12 +740,20 @@ def main_online_client(playerID):
                         print("SPOTSSSSSSSSSSSSSSS")
 
         flagVar = 0
+        try:
+            if len(Globals.data) > 0:
+                if lastRecv != Globals.data[-1]:
+                    rres = Globals.data[-1]
+                    lastRecv = Globals.data[-1]
+                    if rres.decode().startswith("CHAT"):
+                        chat.addRecv(rres.decode()[4:])
+        except:
+            pass
         chatRes = chatBox.update(mouseB, events)
         if chatRes != None:
             chat.send(chatRes)
         chatBox.draw(window)
         chat.draw(window)
-        # Drawing
         for entity in entityList:
             entity.draw(window)
             if type(entity) == King and change == 1:
@@ -738,7 +775,6 @@ def main_online_client(playerID):
             change = 0
         if spots != None:
             drawSpots(spots, window)
-            print("Drew these")
         pygame.event.pump()
         pygame.display.flip()
         cooldown -= 1
@@ -772,22 +808,34 @@ def main_server_mode():
     turnNo = 0
     while True:
         print("in this loop")
-        if turnNo % 2 == 0:
-            playerInput = client1_socket.recvfrom(20000)[0].decode()
-            print("Client 1 input")
-            if playerInput.startswith("CHAT"):
-                print("GOT CHAT")
-                client2_socket.sendall(playerInput.encode())
-                print("FORWARDED CHAT")
-                continue
-        else:
-            playerInput = client2_socket.recvfrom(20000)[0].decode()
-            print("Client 2 input")
-            if playerInput.startswith("CHAT"):
-                print("GOT CHAT")
-                client1_socket.sendall(playerInput.encode())
-                print("FORWARDED CHAT")
-                continue
+        client1_socket.settimeout(1.0)
+        client2_socket.settimeout(1.0)
+
+        while True:
+            try:
+                player1Input = client1_socket.recvfrom(20000)[0].decode()
+                if player1Input.startswith("CHAT"):
+                    if len(player1Input) > 50:
+                        print("Sent gamestate lol")
+                    client2_socket.send(player1Input.encode())
+                else:
+                    if turnNo % 2 == 0:
+                        playerInput = player1Input
+                        break
+            except:
+                pass
+            try:
+                player2Input = client2_socket.recvfrom(20000)[0].decode()
+                if player2Input.startswith("CHAT"):
+                    client1_socket.send(player2Input.encode())
+                    if len(player1Input) > 50:
+                        print("Sent gamestate lol")
+                else:
+                    if turnNo % 2 == 1:
+                        playerInput = player2Input
+                        break
+            except:
+                pass
 
         print("Got stuff")
         b = deserialize_from_json(playerInput)
