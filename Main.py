@@ -19,6 +19,10 @@ from HelperFunctions import *
 from MovingText import *
 from textTest import *
 from chatClient import *
+from ImgButton import *
+from Settings import *
+from Slider import *
+
 
 pygame.init()
 
@@ -402,6 +406,7 @@ def doScreen(screenCode, window):
 
 
 def main_menu():
+    window = pygame.display.set_mode((globals.windowLength, globals.windowHeight))
     listOfButtons = []
     playButton = Button(pygame.Rect(300, 50, 200, 100), "Play Shared Computer", 25)
     listOfButtons.append(playButton)
@@ -413,6 +418,10 @@ def main_menu():
     listOfButtons.append(playButton)
     playButton = Button(pygame.Rect(300, 650, 200, 100), "Quit", 25)
     listOfButtons.append(playButton)
+    settingsButton = ImgButton(
+        pygame.Rect(0, 0, 276, 274),
+        pygame.transform.scale(pygame.image.load("Textures\\Settings.png"), (100, 100)),
+    )
     pressedOnEntry = False
     allowClicks = True
     if pygame.mouse.get_pressed()[0] == True:
@@ -420,9 +429,36 @@ def main_menu():
         allowClicks = False
     while True:
         window.fill("Black")
+        events = pygame.event.get()
+        pygame.event.pump()
         if pressedOnEntry == True:
             if pygame.mouse.get_pressed()[0] == False:
                 allowClicks = True
+        if allowClicks == True:
+            if settingsButton.update() == True:
+                windowSizeSlider = Slider(
+                    pygame.Rect(300, 100, 300, 50),
+                    900,
+                    1200,
+                    pygame.Color("Blue"),
+                    pygame.Color("Cyan"),
+                )
+                applyButton = Button(pygame.Rect(300, 600, 200, 100), "Apply", 40)
+                while True:
+                    window.fill("Black")
+                    for event in events:
+                        windowSizeSlider.handle_event()
+                        if event == pygame.KEYDOWN:
+                            if event.key == pygame.K_ESCAPE:
+                                exit()
+                    if applyButton.update() == True:
+                        Settings.width = windowSizeSlider.value
+                        window = pygame.display.set_mode((Settings.width, 800))
+                        print("did it")
+                    applyButton.draw(window)
+                    windowSizeSlider.draw(window)
+                    pygame.display.flip()
+
         for button in listOfButtons:
             if allowClicks == True:
                 res = button.update()
@@ -467,7 +503,8 @@ def main_menu():
 
         for button in listOfButtons:
             button.draw(window)
-
+        settingsButton.draw(window)
+        pygame.event.pump()
         pygame.display.flip()
 
 
@@ -521,7 +558,6 @@ def main_online_client(playerID):
     spots = None
     cooldownInit = 30
     cooldown = cooldownInit
-    window = pygame.display.set_mode((950, 800))
     turnNo = 0
     chatBox = inputBox(pygame.Rect(800, 650, 200, 150))
     string = ""
@@ -589,11 +625,16 @@ def main_online_client(playerID):
     t.start()
     lastRecv = None
     while program_radi:
-        window.fill("Black")
+        window.fill(string)
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                program_radi = False
+                pygame.quit()
+                exit()
         if turnNo % 2 != playerID:
             print("In limbo")
             crtaj_tablu(window)
-            events = pygame.event.get()
             mouseB = pygame.mouse.get_pressed()
             for entity in entityList:
                 entity.draw(window)
@@ -614,8 +655,10 @@ def main_online_client(playerID):
                     continue
             except:
                 continue
-            if rres.decode().startswith("CHAT"):
-                chat.addRecv(rres.decode()[4:])
+            if rres.decode().startswith("<CHAT>"):
+                chat.addRecv(rres.decode().split("<CHAT>")[1])
+                continue
+            if rres == b"":
                 continue
             res = rres.decode()
             print(rres[0])
@@ -661,10 +704,6 @@ def main_online_client(playerID):
 
             continue
         crtaj_tablu(window)
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.QUIT:
-                program_radi = False
         mouseB = pygame.mouse.get_pressed()
         change = 0
         if mouseB[0] == True and cooldown <= 0:
@@ -745,8 +784,8 @@ def main_online_client(playerID):
                 if lastRecv != Globals.data:
                     rres = Globals.data
                     lastRecv = Globals.data
-                    if rres.decode().startswith("CHAT"):
-                        chat.addRecv(rres.decode()[4:])
+                    if rres.decode().startswith("<CHAT>"):
+                        chat.addRecv(rres.decode().split("<CHAT>")[1])
         except:
             pass
         chatRes = chatBox.update(mouseB, events)
@@ -814,9 +853,7 @@ def main_server_mode():
         while True:
             try:
                 player1Input = client1_socket.recvfrom(20000)[0].decode()
-                if player1Input.startswith("CHAT"):
-                    if len(player1Input) > 50:
-                        print("Sent gamestate lol")
+                if player1Input.startswith("<CHAT>"):
                     client2_socket.send(player1Input.encode())
                 else:
                     if turnNo % 2 == 0:
@@ -826,10 +863,8 @@ def main_server_mode():
                 pass
             try:
                 player2Input = client2_socket.recvfrom(20000)[0].decode()
-                if player2Input.startswith("CHAT"):
+                if player2Input.startswith("<CHAT>"):
                     client1_socket.send(player2Input.encode())
-                    if len(player1Input) > 50:
-                        print("Sent gamestate lol")
                 else:
                     if turnNo % 2 == 1:
                         playerInput = player2Input

@@ -14,7 +14,7 @@ class chatClient:
         pass
 
     def send(self, text):
-        self.them.sendall(("CHAT" + text).encode())
+        self.them.sendall(("<CHAT>" + text).encode())
         self.things.append(["SENT", text])
         pass
 

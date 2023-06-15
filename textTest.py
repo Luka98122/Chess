@@ -68,6 +68,14 @@ class inputBox:
                     self.lines = self.update_text(
                         self.text, self.font, self.input_box.width - 10
                     )
+                    text_surface = self.font.render(self.text, True, (0, 0, 0))
+                    while text_surface.get_width() > self.input_box.width - 10:
+                        # Remove the last character until it fits
+                        self.text = self.text[:-1]
+                        text_surface = self.font.render(self.text, True, (0, 0, 0))
+
+                    # if len(self.text) > 16:
+                    #    self.text = self.text[:-1]
 
         return None
 
