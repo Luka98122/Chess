@@ -412,7 +412,7 @@ def main_menu():
     playButton = Button(pygame.Rect(300, 650, 200, 100), "Quit", 25)
     listOfButtons.append(playButton)
     settingsButton = ImgButton(
-        pygame.Rect(0, 0, 276, 274),
+        pygame.Rect(0, 0, 100, 100),
         pygame.transform.scale(pygame.image.load("Textures\\Settings.png"), (100, 100)),
     )
     pressedOnEntry = False
