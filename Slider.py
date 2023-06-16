@@ -30,7 +30,6 @@ class Slider:
         screen.blit(value_text, (pos_x - 20, self.rect.y - 40))
 
     def handle_event(self):
-        a = pygame.event.get()
         mouseState = pygame.mouse.get_pressed()
         if mouseState[0]:
 

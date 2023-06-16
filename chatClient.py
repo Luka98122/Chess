@@ -1,5 +1,6 @@
 import socket
 import pygame
+from Settings import *
 
 pygame.init()
 
@@ -28,9 +29,9 @@ class chatClient:
         for text in reversed(self.things):
             color = None
             if text[0] == "RECV":
-                color = pygame.Color("LightBlue")
+                color = Settings.theirChatColor
             if text[0] == "SENT":
-                color = pygame.Color("Purple")
+                color = Settings.myChatColor
             h = max(32, len(text) // 16 * 32)
             offset += h
             draw_box = pygame.Rect(800, 600 - offset, 200, h)

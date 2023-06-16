@@ -1,3 +1,3 @@
 class globals:
-    windowLength = 800
+    windowLength = 1000
     windowHeight = 800

@@ -10,7 +10,6 @@ class ImgButton:
         self.pos = pygame.Vector2(rect.x, rect.y)
 
     def update(self):
-        pygame.event.pump()
         mouseB = pygame.mouse.get_pressed()
         mousePos = pygame.mouse.get_pos()
         if (

@@ -443,21 +443,64 @@ def main_menu():
                     pygame.Color("Blue"),
                     pygame.Color("Cyan"),
                 )
+                # Color of Oponent's chat messages
+                themInput = inputBox(pygame.Rect(300, 300, 200, 100))
+                # Color of this player's chat messages
+                meInput = inputBox(pygame.Rect(300, 450, 200, 100))
                 applyButton = Button(pygame.Rect(300, 600, 200, 100), "Apply", 40)
+
+                theirColor = None
+                myColor = None
                 while True:
                     window.fill("Black")
-                    for event in events:
-                        windowSizeSlider.handle_event()
-                        if event == pygame.KEYDOWN:
-                            if event.key == pygame.K_ESCAPE:
-                                exit()
+                    windowSizeSlider.handle_event()
+                    events = pygame.event.get()
+                    mouseB = pygame.mouse.get_pressed()
+                    if "KeyDown" in str(events) and "'key': 27" in str(events):
+                        break
+
+                    # Setting oponent chat color
+                    res = themInput.update(mouseB, events)
+                    if res != None:
+                        try:
+                            theirColor = pygame.Color(res)
+                        except:
+                            pass
+
+                    # Setting my chat coor
+                    res = meInput.update(mouseB, events)
+                    if res != None:
+                        try:
+                            myColor = pygame.Color(res)
+                        except:
+                            pass
+                    windowSizeSlider.handle_event()
+
                     if applyButton.update() == True:
                         Settings.width = windowSizeSlider.value
                         window = pygame.display.set_mode((Settings.width, 800))
+                        if theirColor != None:
+                            Settings.theirChatColor = theirColor
+                        if myColor != None:
+                            Settings.myChatColor = myColor
                         print("did it")
+
+                    # Display
+                    if theirColor != None:
+                        pygame.draw.rect(
+                            window, theirColor, pygame.Rect(550, 300, 50, 50)
+                        )
+
+                    if myColor != None:
+                        pygame.draw.rect(window, myColor, pygame.Rect(550, 450, 50, 50))
+
+                    # Drawing
+                    themInput.draw(window)
+                    meInput.draw(window)
                     applyButton.draw(window)
                     windowSizeSlider.draw(window)
                     pygame.display.flip()
+                    pygame.event.pump()
 
         for button in listOfButtons:
             if allowClicks == True:
