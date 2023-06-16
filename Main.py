@@ -211,9 +211,7 @@ def canKingGoHere(x, y, king, entityList):
     for entity in entityList:
         if entity.color != king.color:
             if type(entity) == King:
-                print("Made it")
                 if [x, y] in kingSpots(entity, entityList):
-                    print("Used kingSpots")
                     return False
                 continue
             if type(entity) == Pawn:
@@ -302,7 +300,6 @@ def select_file():
     filepath = filedialog.askopenfilename(
         filetypes=[("Chess Save", ".chess")], defaultextension=".chess"
     )
-    print(filepath)
     return filepath
 
 
@@ -314,7 +311,7 @@ def jsonDecoder(data):
 
 
 def jsonDecoderBig(data):
-    print(data.decode())
+    # print(data.decode())
     data = json.loads(data.decode())
     gamestate = data["GameState"]
     if gamestate == None:
@@ -335,14 +332,10 @@ def load_file(filepath):
         entity = jsonDecoder(dict)
         if entity not in ["Error", None]:
             entityList.append(entity)
-    print("LOADED")
     return entityList
 
 
 def checkOnKing(king, entityList):
-    # if isSpotProtected(king) == False:
-    #    if possibleSpots(king) == []:
-    #        print(f"Color {king.color} lost to a stalemate")
     if isSpotProtected(king, entityList, possibleSpots) == True:
         king.checkedTime += 1
         if king.checkedTime == 2:
@@ -483,7 +476,6 @@ def main_menu():
                             Settings.theirChatColor = theirColor
                         if myColor != None:
                             Settings.myChatColor = myColor
-                        print("did it")
 
                     # Display
                     if theirColor != None:
@@ -604,21 +596,6 @@ def main_online_client(playerID):
     turnNo = 0
     chatBox = inputBox(pygame.Rect(800, 650, 200, 150))
     string = ""
-    # if playerID == 0:
-    #    me = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #    me.bind(("127.0.0.1", 62292))
-    #    print("binded")
-    #    me.listen(10)
-    #    them, adr = me.accept()
-    #    print("received")
-    #    chat = chatClient(them)
-    # else:
-    #    them = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    #    them.bind(("127.0.0.1", 62293))
-    #    print("bouta connect")
-    #    them.connect(("127.0.0.1", 62292))
-    #    print("connected")
-    #    chat = chatClient(them)
     chat = chatClient(serverSocket)
     if playerID == 0:
         string = "WHITE"
@@ -676,7 +653,6 @@ def main_online_client(playerID):
                 pygame.quit()
                 exit()
         if turnNo % 2 != playerID:
-            print("In limbo")
             crtaj_tablu(window)
             mouseB = pygame.mouse.get_pressed()
             for entity in entityList:
@@ -704,7 +680,6 @@ def main_online_client(playerID):
             if rres == b"":
                 continue
             res = rres.decode()
-            print(rres[0])
             if len(res) == 1:
                 a = 2
             if res[0] == str(playerID):
@@ -743,7 +718,6 @@ def main_online_client(playerID):
                 entityList = jsonDecoderBig(rres)
             a = 2
             turnNo = json.loads(rres.decode())["TurnNo"]
-            print("End of exception")
 
             continue
         crtaj_tablu(window)
@@ -754,20 +728,16 @@ def main_online_client(playerID):
             tilePos = getTileClickedOn(mousePos)
             entityClickedOn = spotOccupied(tilePos[0], tilePos[1], entityList)[1]
             if entityClickedOn != None:
-                print("Got something")
                 cooldown = cooldownInit
                 if lastEntity == None:
                     if playerID != entityClickedOn.color:
-                        print("Got set to invalid")
                         entityClickedOn = None
             if entityClickedOn != None and lastEntity == entityClickedOn:
-                print("Nulled out")
                 entityClickedOn = None
                 lastEntity = None
                 spots = None
             res = spotOccupied(tilePos[0], tilePos[1], entityList)
             if spots != None:
-                print("Clickeeeeeed")
                 if lastEntity != None:
                     if res[0] == True:
                         if res[1] != None:
@@ -787,13 +757,11 @@ def main_online_client(playerID):
                                 turnNo += 1
                                 entityClickedOn = None
                                 lastEntity = None
-                                print("Moved")
                                 spots = None
                                 mouseB = False
                                 continue
                     else:
                         if tilePos in spots:
-                            print("Moved 2")
                             serverSocket.send(
                                 serialize_to_json(
                                     lastEntity.x,
@@ -802,24 +770,19 @@ def main_online_client(playerID):
                                     tilePos[1],
                                 ).encode()
                             )
-                            print("Successfully sent")
                             change = 1
                             turnNo += 1
                             spots = None
                             continue
                 else:
-                    print("None")
+                    pass
 
-            print("got clicked")
             if entityClickedOn == None:
-                print("It was None?")
                 pass
             else:
                 lastEntity = entityClickedOn
                 if playerID == entityClickedOn.color or freeMove:
                     spots = possibleSpots(entityClickedOn, entityList)
-                    for i in range(10):
-                        print("SPOTSSSSSSSSSSSSSSS")
 
         flagVar = 0
         try:
@@ -889,7 +852,6 @@ def main_server_mode():
 
     turnNo = 0
     while True:
-        print("in this loop")
         client1_socket.settimeout(1.0)
         client2_socket.settimeout(1.0)
 
@@ -915,10 +877,9 @@ def main_server_mode():
             except:
                 pass
 
-        print("Got stuff")
         b = deserialize_from_json(playerInput)
         if b == "WHY":
-            print("got why")
+            exit("WHY")
             continue
         x = b[0]
         y = b[1]
@@ -928,7 +889,6 @@ def main_server_mode():
         entityClickedOn = spotOccupied(x, y, entityList)[1]
         spots = possibleSpots(entityClickedOn, entityList)
         if [x1, y1] in spots:
-            print("Valid move")
             if spotOccupied(x1, y1, entityList)[0] == True:
                 del entityList[entityList.index(spotOccupied(x1, y1, entityList)[1])]
             entityClickedOn.move([x1, y1])
@@ -936,7 +896,6 @@ def main_server_mode():
             for entity in entityList:
                 if type(entity) == King:
                     foundKings.append(entity)
-            print("Found kings")
             if len(foundKings) == 1:
                 # Somebody won
                 if foundKings[0].color == 0:
@@ -955,7 +914,6 @@ def main_server_mode():
 
                     print("A winner has been found")
                     exit()
-            print("Checked for winners")
             dataList = []
             for entity in entityList:
                 data = jsonSerializer(entity)
@@ -963,26 +921,20 @@ def main_server_mode():
             turnNo += 1
             info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
             json_object = json.dumps(info, indent=4)
-            print("Moved")
             if json_object.encode() == b"":
-                print("OMG BUGGGGGGGGGGGGGGGG")
                 a = 2
             client1_socket.sendall(json_object.encode())
             client2_socket.sendall(json_object.encode())
 
         else:
-            print("Invalid move")
             info = {"GameState": None, "TurnNo": turnNo, "Validity": False}
             json_object = json.dumps(info, indent=4)
-            print("Moved")
             if json_object.encode() == b"":
-                print(" ILLEGAL MOVE BUG")
                 a = 2
             if turnNo % 2 == 0:
                 client1_socket.sendall(json_object.encode())
             else:
                 client2_socket.sendall(json_object.encode())
-            print("Illegal move")
 
         # crtaj_tablu(window)
         # for entity in entityList:
@@ -1020,7 +972,6 @@ def main(freeMove, entityList):
                 spots = None
             res = spotOccupied(tilePos[0], tilePos[1], entityList)
             if spots != None:
-                print("Clickeeeeeed")
                 if lastEntity != None:
                     if turnNo % 2 == lastEntity.color or freeMove:
                         if res[0] == True:
@@ -1033,23 +984,19 @@ def main(freeMove, entityList):
                                         entityList.remove(entityClickedOn)
                                         entityClickedOn = None
                                         lastEntity = None
-                                        print("Moved")
                                         spots = None
                                         mouseB = False
                                         continue
                         else:
                             if tilePos in spots:
-                                print("Moved 2")
                                 lastEntity.move(tilePos)
                                 change = 1
                                 turnNo += 1
                                 spots = None
                 else:
-                    print("None")
+                    pass
 
-            print("got clicked")
             if entityClickedOn == None:
-                print("none type")
                 pass
             else:
                 lastEntity = entityClickedOn
