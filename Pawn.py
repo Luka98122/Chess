@@ -12,7 +12,7 @@ class Pawn:
     BlackPawn = pygame.image.load("Textures\\BlackPawn.png")
     WhitePawn = pygame.image.load("Textures\\WhitePawn.png")
     strType = "pawn"
-
+    value = 1
     def __init__(self, x, y, color):
         self.moves = 0
         self.x = x

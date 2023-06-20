@@ -5,7 +5,7 @@ class Bishop:
     BlackBishop = pygame.image.load("Textures\\BlackBishop.png")
     WhiteBishop = pygame.image.load("Textures\\WhiteBishop.png")
     strType = "bishop"
-
+    value = 4
     def __init__(self, x, y, color):
         self.x = x
         self.y = y

@@ -7,7 +7,7 @@ class King:
     BlackKing = pygame.image.load("Textures\\BlackKing.png")
     WhiteKing = pygame.image.load("Textures\\WhiteKing.png")
     strType = "king"
-
+    value = 1000
     def __init__(self, x, y, color):
         self.x = x
         self.y = y

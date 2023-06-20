@@ -921,6 +921,9 @@ def main_server_mode():
             turnNo += 1
             info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
             json_object = json.dumps(info, indent=4)
+            f = open("JSONDATA.json", "w")
+            f.write(json_object)
+            f.close()
             if json_object.encode() == b"":
                 a = 2
             client1_socket.sendall(json_object.encode())

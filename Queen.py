@@ -5,6 +5,7 @@ class Queen:
     BlackQueen = pygame.image.load("Textures\\BlackQueen.png")
     WhiteQueen = pygame.image.load("Textures\\WhiteQueen.png")
     strType = "queen"
+    value = 9
 
     def __init__(self, x, y, color):
         self.x = x

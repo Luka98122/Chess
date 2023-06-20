@@ -5,7 +5,7 @@ class Rook:
     BlackRook = pygame.image.load("Textures\\BlackRook.png")
     WhiteRook = pygame.image.load("Textures\\WhiteRook.png")
     strType = "rook"
-
+    value = 5
     def __init__(self, x, y, color):
         self.x = x
         self.y = y

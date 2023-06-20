@@ -5,6 +5,7 @@ class Knight:
     BlackKnight = pygame.image.load("Textures\\BlackKnight.png")
     WhiteKnight = pygame.image.load("Textures\\WhiteKnight.png")
     strType = "knight"
+    value = 3
 
     def __init__(self, x, y, color):
         self.x = x
