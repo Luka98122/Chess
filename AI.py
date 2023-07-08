@@ -4,6 +4,7 @@ import json
 import threading
 from copy import *
 
+
 from Pawn import *
 from Rook import *
 from Bishop import *
@@ -15,26 +16,54 @@ from HelperFunctions import *
 from Trees import *
 
 
-def scoreBoard(entityList, color):
+def is_check(king, entityList):
+    for entity in entityList:
+        if entity.color != king.color:
+            if [king.x, king.y] in possibleSpots(entity, entityList):
+                return True
+    return False
+
+
+def is_checkmate(king, entityList):
+    for move in getAllMoves(entityList, king.color):
+        entityList1 = changeStateFromList(entityList, move)
+        if is_check(king, entityList1) == False:
+            return False
+    return True
+
+
+def scoreBoard(gameState, color, weights: list):
+    # 0                1                 2   3   4   5   6   7   8   9
+    # [ourKingInCheck, theirKingInCheck, y1, y2, y3, y4, y5, y6, y7, y8]
+    entityList = jsonDecoderBig(gameState)
     score = 0
+    tScore = 0
     for entity in entityList:
         if entity.color == color:
-            score += entity.value
+            if type(entity) != King:
+                if color == 0:
+                    tScore += entity.value * weights[2 + entity.y]
+                else:
+                    tScore += entity.value * weights[-entity.y]
+        else:
+            if type(entity) != King:
+                if color == 0:
+                    tScore += entity.value * weights[2 + entity.y]
+                else:
+                    tScore += entity.value * weights[-entity.y]
 
         # If our king is in check
         if type(entity) == King and entity.color == color:
-            for entity2 in entityList:
-                if entity2 != King:
-                    if [entity.x, entity.y] in possibleSpots(entity2):
-                        score -= 20
+            if is_checkmate(entity, entityList):
+                score -= weights[0]
+                tScore += weights[0]
 
         # If their king is in check
         if type(entity) == King and entity.color != color:
-            for entity2 in entityList:
-                if entity2 != King:
-                    if [entity.x, entity.y] in possibleSpots(entity2):
-                        score += 20
-
+            if is_checkmate(entity, entityList):
+                score += weights[1]
+                tScore -= weights[1]
+    return score - tScore
     pass
 
 
@@ -256,6 +285,8 @@ def jsonDecoderBig(data):
 def getAllMoves(entityList, color):
     allMoves = []
     for entity in entityList:
+        if type(entity) == King:
+            a = 2
         if entity.color != color:
             continue
         spots = possibleSpots(entity, entityList)
@@ -264,11 +295,22 @@ def getAllMoves(entityList, color):
     return allMoves
 
 
+def changeStateFromList(entityList, move):
+    for entity in entityList:
+        if [entity.x, entity.y] == move[1]:
+            del entity
+    for entity in entityList:
+        if [entity.x, entity.y] == move[0]:
+            entity.x = move[1][0]
+            entity.y = move[1][1]
+    return entityList
+
+
 def changeState(gameState, move):
     entityList = jsonDecoderBig(gameState)
     for entity in entityList:
         if [entity.x, entity.y] == move[1]:
-            del entity
+            entityList.remove(entity)
     for entity in entityList:
         if [entity.x, entity.y] == move[0]:
             entity.x = move[1][0]
@@ -291,31 +333,179 @@ def populate(tree: Tree, gameState, color):
     pass
 
 
+def populateWithList(tree: Tree, entityList, color):
+    for move in getAllMoves(entityList, color):
+        tree.insert(move)
+    pass
+
+
+def drawSpots(spots, window):
+    # Spot 0 je x, spot 1 je y
+    for spot in spots:
+        pygame.draw.circle(
+            window, pygame.Color("Gray"), (spot[0] * 100 + 50, spot[1] * 100 + 50), 20
+        )
+
+
 def populateFull(tree: Tree, gameState, color):
     colors = [0, 1]
     populate(tree, gameState, color)
     for branch in tree.branches:
         gameState2 = changeState(gameState, branch.data)
         populate(branch, gameState2, colors[colors.index(color) - 1])
+        """
         for subBranch in branch.branches:
             gameState3 = changeState(gameState2, subBranch.data)
             populate(subBranch, gameState3, color)
             for subSubBranch in subBranch.branches:
                 gameState4 = changeState(gameState3, subSubBranch.data)
                 populate(subSubBranch, gameState4, colors[colors.index(color) - 1])
+            """
 
 
-a = Pawn(0, 0, 0)
-jsonSerializer(a)
+def chooseAMove(gameState, color, weights):
+    tree = Tree(None)
+    populateFull(tree, gameState, color)
+    bestSoFar = [0, [[0, 0], [0, 0]]]
+    for branch in tree.branches:
+        game1 = changeState(gameState, branch.data)
+        for subBranch in branch.branches:
+            game2 = changeState(game1, subBranch.data)
+            score = scoreBoard(game2, color, weights)
+            if score > bestSoFar[0]:
+                bestSoFar[1] = branch.data
+                bestSoFar[0] = score
+
+    return bestSoFar
+
+
+def makeMove(move, eList, turnNo):
+    dataList = []
+    for entity in entityList:
+        data = jsonSerializer(entity)
+        dataList.append(data)
+    info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
+    json_object = json.dumps(info, indent=4)
+    f = open("testt.json", "w")
+    f.write(json_object)
+    f.close()
+
+    for entity in eList:
+        data = jsonSerializer(entity)
+        dataList.append(data)
+    state = changeState(json_object, move[1])
+    return jsonDecoderBig(state)
+
+
 f = open("JSONDATA.json", "r")
 contents = f.read()
 f.close()
-root = Tree(None)
-populateFull(root, contents, 0)
-print("Hi")
-f = open("Log.txt", "w")
-print(f"Root branches {len(root.branches)}")
-f.write(f"{len(root.branches)}\n")
-for branch in root.branches:
-    f.write(f"Move: {branch.data}, Branchs branches: {len(branch.branches)}\n")
-f.close()
+
+
+weights = [-20, 20, 1.03, 1.05, 1.08, 1.12, 1.15, 1.18, 1.21, 1.24]
+
+window = pygame.display.set_mode((800, 800))
+
+lastEntity = None
+program_radi = True
+spots = None
+cooldownInit = 30
+cooldown = cooldownInit
+turnNo = 0
+entityList = jsonDecoderBig(contents)
+while True:
+    if turnNo % 2 == 1:
+        dataList = []
+        for entity in entityList:
+            data = jsonSerializer(entity)
+            dataList.append(data)
+        info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
+        json_object = json.dumps(info, indent=4)
+
+        move = chooseAMove(json_object, 1, weights)
+        entityList = makeMove(move, entityList, 0)
+        turnNo += 1
+        continue
+    crtaj_tablu(window)
+    events = pygame.event.get()
+    for event in events:
+        if event.type == pygame.QUIT:
+            program_radi = False
+    mouseB = pygame.mouse.get_pressed()
+    change = 0
+    if mouseB[0] == True and cooldown <= 0:
+        mousePos = pygame.mouse.get_pos()
+        tilePos = getTileClickedOn(mousePos)
+        entityClickedOn = spotOccupied(tilePos[0], tilePos[1], entityList)[1]
+        if entityClickedOn != None:
+            cooldown = cooldownInit
+        if entityClickedOn != None and lastEntity == entityClickedOn:
+            entityClickedOn = None
+            lastEntity = None
+            spots = None
+        res = spotOccupied(tilePos[0], tilePos[1], entityList)
+        if spots != None:
+            if lastEntity != None:
+                if 0 == lastEntity.color:
+                    if res[0] == True:
+                        if res[1] != None:
+                            if res[1].color != lastEntity.color:
+                                if tilePos in spots:
+                                    lastEntity.move(tilePos)
+                                    change = 1
+                                    turnNo += 1
+                                    entityList.remove(entityClickedOn)
+                                    entityClickedOn = None
+                                    lastEntity = None
+                                    spots = None
+                                    mouseB = False
+
+                                    continue
+                    else:
+                        if tilePos in spots:
+                            lastEntity.move(tilePos)
+                            change = 1
+                            turnNo += 1
+                            spots = None
+
+            else:
+                pass
+
+        if entityClickedOn == None:
+            pass
+        else:
+            lastEntity = entityClickedOn
+            if 0 == lastEntity.color:
+                spots = possibleSpots(entityClickedOn, entityList)
+    flagVar = 0
+
+    # Drawing
+    for entity in entityList:
+        entity.draw(window)
+    for entity in entityList:
+        if type(entity) == King:
+            if change != 1:
+                continue
+            entity.update(entityList, possibleSpots)
+            flagVar = 1
+            continue
+        if type(entity) == Pawn:
+            entity.update(window, entityList.index(entity), entityList)
+            continue
+        entity.update()
+    # Updating
+    if flagVar == 1:
+        change = 0
+    if spots != None:
+        drawSpots(spots, window)
+    pygame.display.flip()
+    cooldown -= 1
+
+print(chooseAMove(contents, 0, weights))
+
+# f = open("Log.txt", "w")
+# print(f"Root branches {len(root.branches)}")
+# f.write(f"{len(root.branches)}\n")
+# for branch in root.branches:
+#    f.write(f"Move: {branch.data}, Branchs branches: {len(branch.branches)}\n")
+# f.close()
