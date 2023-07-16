@@ -306,15 +306,15 @@ def changeStateFromList(entityList, move):
     return entityList
 
 
-def changeState(gameState, move):
+def changeState(gameState, move, purp):
     entityList = jsonDecoderBig(gameState)
-    for entity in entityList:
-        if [entity.x, entity.y] == move[1]:
-            entityList.remove(entity)
     for entity in entityList:
         if [entity.x, entity.y] == move[0]:
             entity.x = move[1][0]
             entity.y = move[1][1]
+            if purp == "AI":
+                print(f"Moved {type(entity)} to {entity.x} {entity.y}")
+            break
 
     dataList = []
     turnNo = json.loads(gameState)["TurnNo"]
@@ -351,7 +351,7 @@ def populateFull(tree: Tree, gameState, color):
     colors = [0, 1]
     populate(tree, gameState, color)
     for branch in tree.branches:
-        gameState2 = changeState(gameState, branch.data)
+        gameState2 = changeState(gameState, branch.data, "pop")
         populate(branch, gameState2, colors[colors.index(color) - 1])
         """
         for subBranch in branch.branches:
@@ -363,25 +363,39 @@ def populateFull(tree: Tree, gameState, color):
             """
 
 
-def chooseAMove(gameState, color, weights):
+def bestMove(gameState, color, weights):
     tree = Tree(None)
     populateFull(tree, gameState, color)
     bestSoFar = [0, [[0, 0], [0, 0]]]
     for branch in tree.branches:
-        game1 = changeState(gameState, branch.data)
-        for subBranch in branch.branches:
-            game2 = changeState(game1, subBranch.data)
-            score = scoreBoard(game2, color, weights)
-            if score > bestSoFar[0]:
-                bestSoFar[1] = branch.data
-                bestSoFar[0] = score
+        game1 = changeState(gameState, branch.data, "pop2")
+        score = scoreBoard(game1, color, weights)
+        if score == 606.78:
+            a = 2
+        if score > bestSoFar[0]:
+            bestSoFar[1] = branch.data
+            bestSoFar[0] = score
 
     return bestSoFar
+
+
+def chooseAMove(gameState, color, weights):
+    otherColor = 1 - color
+    move1 = bestMove(gameState, color, weights)
+
+    game1 = changeState(gameState, move1[1], "none")
+    move = bestMove(game1, otherColor, weights)
+    game2 = changeState(game1, move[1], "none")
+    move = bestMove(game2, color, weights)
+    return move1
 
 
 def makeMove(move, eList, turnNo):
     dataList = []
     for entity in entityList:
+        if entity.x == move[1][0][0] and entity.y == move[1][0][1]:
+            entity.x = move[1][1][0]
+            entity.y = move[1][1][1]
         data = jsonSerializer(entity)
         dataList.append(data)
     info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
@@ -393,8 +407,9 @@ def makeMove(move, eList, turnNo):
     for entity in eList:
         data = jsonSerializer(entity)
         dataList.append(data)
-    state = changeState(json_object, move[1])
-    return jsonDecoderBig(state)
+    state = changeState(json_object, move[1], "AI")
+    res = jsonDecoderBig(state)
+    return res
 
 
 f = open("JSONDATA.json", "r")
@@ -423,9 +438,16 @@ while True:
         json_object = json.dumps(info, indent=4)
 
         move = chooseAMove(json_object, 1, weights)
+        moveX1 = move[1][0][0]
+        moveX2 = move[1][1][0]
+        moveY1 = move[1][0][1]
+        moveY2 = move[1][1][1]
+
+        print(move)
         entityList = makeMove(move, entityList, 0)
         turnNo += 1
         continue
+
     crtaj_tablu(window)
     events = pygame.event.get()
     for event in events:

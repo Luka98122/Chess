@@ -12,7 +12,8 @@ class Pawn:
     BlackPawn = pygame.image.load("Textures\\BlackPawn.png")
     WhitePawn = pygame.image.load("Textures\\WhitePawn.png")
     strType = "pawn"
-    value = 1
+    value = 3
+
     def __init__(self, x, y, color):
         self.moves = 0
         self.x = x
@@ -33,7 +34,7 @@ class Pawn:
         window.blit(img, pygame.Rect(self.x * 100 + 10, self.y * 100, 100, 100))
 
     def update(self, window, pawnIndex, EntityList):
-        if self.color == 1:
+        if self.color == 0:
             promoPos = 7
         else:
             promoPos = 0

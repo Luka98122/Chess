@@ -591,7 +591,7 @@ def main_online_client(playerID):
     lastEntity = None
     program_radi = True
     spots = None
-    cooldownInit = 30
+    cooldownInit = 100
     cooldown = cooldownInit
     turnNo = 0
     chatBox = inputBox(pygame.Rect(800, 650, 200, 150))
@@ -801,9 +801,6 @@ def main_online_client(playerID):
         chat.draw(window)
         for entity in entityList:
             entity.draw(window)
-            if type(entity) == King and change == 1:
-                checkOnKing(entity, entityList)
-                flagVar = 1
         for entity in entityList:
             if type(entity) == King:
                 if change != 1:
