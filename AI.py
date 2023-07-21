@@ -15,6 +15,8 @@ from globals import *
 from HelperFunctions import *
 from Trees import *
 
+globals.counter = 0
+
 
 def is_check(king, entityList):
     for entity in entityList:
@@ -33,6 +35,7 @@ def is_checkmate(king, entityList):
 
 
 def scoreBoard(gameState, color, weights: list):
+    globals.counter += 1
     # 0                1                 2   3   4   5   6   7   8   9
     # [ourKingInCheck, theirKingInCheck, y1, y2, y3, y4, y5, y6, y7, y8]
     entityList = jsonDecoderBig(gameState)
@@ -458,6 +461,29 @@ def chooseAMove(gameState, color, weights):
     return [bestSoFar, BestMove]
 
 
+def chooseAMove2(gameState, color, weights, depthLeft):
+    entityList = jsonDecoderBig(gameState)
+    bestScore = -1000
+    # bestmove = [[0, 6], [0, 4]]
+    for move in getAllMoves(entityList, color):
+        if depthLeft != 0:
+            newGameState = changeState(gameState, move, "None")
+            res = chooseAMove2(newGameState, 1 - color, weights, depthLeft - 1)
+            if res[0] > bestScore:
+                bestScore = res[0]
+                bestmove = move
+        else:
+            newGameState = changeState(gameState, move, "None")
+            score = scoreBoard(newGameState, color, weights)
+            if score > bestScore:
+                bestmove = move
+                bestScore = score
+    if depthLeft == 2:
+        debugPrintBoard(changeState(gameState, bestmove, "None"))
+    return [bestScore, bestmove]
+    pass
+
+
 def makeMove(move, eList, turnNo):
     dataList = []
     for entity in entityList:
@@ -524,8 +550,10 @@ while True:
             dataList.append(data)
         info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
         json_object = json.dumps(info, indent=4)
-
-        move = chooseAMove(json_object, 1, weights)
+        start = time.time()
+        move = chooseAMove2(json_object, 1, weights, 2)
+        end = time.time()
+        print(f"{end-start} seconds. ")
         moveX1 = move[1][0][0]
         moveX2 = move[1][1][0]
         moveY1 = move[1][0][1]

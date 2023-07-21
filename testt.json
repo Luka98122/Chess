@@ -24,16 +24,16 @@
         {
             "type": "pawn",
             "x": 3,
-            "y": 4,
+            "y": 1,
             "color": 0,
-            "moves": 2
+            "moves": 0
         },
         {
             "type": "pawn",
             "x": 4,
             "y": 1,
             "color": 0,
-            "moves": 0
+            "moves": 1
         },
         {
             "type": "pawn",
@@ -80,7 +80,7 @@
         {
             "type": "pawn",
             "x": 3,
-            "y": 6,
+            "y": 4,
             "color": 1,
             "moves": 0
         },
@@ -156,15 +156,15 @@
         },
         {
             "type": "knight",
-            "x": 3,
-            "y": 3,
+            "x": 1,
+            "y": 7,
             "color": 1,
             "moves": 0
         },
         {
             "type": "knight",
-            "x": 5,
-            "y": 5,
+            "x": 6,
+            "y": 7,
             "color": 1,
             "moves": 0
         },
