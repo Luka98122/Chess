@@ -42,15 +42,20 @@ def scoreBoard(gameState, color, weights: list):
         if entity.color == color:
             if type(entity) != King:
                 if color == 0:
-                    tScore += entity.value * weights[2 + entity.y]
+                    score += (
+                        entity.value * weights[10 + entity.y] * weights[2 + entity.x]
+                    )
+
                 else:
-                    tScore += entity.value * weights[-entity.y]
+                    score += entity.value * weights[-entity.y] * weights[2 + entity.x]
         else:
             if type(entity) != King:
                 if color == 0:
-                    tScore += entity.value * weights[2 + entity.y]
+                    tScore += (
+                        entity.value * weights[10 + entity.y] * weights[2 + entity.x]
+                    )
                 else:
-                    tScore += entity.value * weights[-entity.y]
+                    tScore += entity.value * weights[-entity.y] * weights[2 + entity.x]
 
         # If our king is in check
         if type(entity) == King and entity.color == color:
@@ -306,8 +311,59 @@ def changeStateFromList(entityList, move):
     return entityList
 
 
+def debugPrintBoard(gameState):
+    entityList = jsonDecoderBig(gameState)
+    boardList = []
+    padder = 2
+    for i in range(8):
+        boardList.append([])
+        for j in range(8):
+            if (i + j) % 2 != 0:
+                boardList[i].append("⬜ ")
+            else:
+                boardList[i].append("⬛ ")
+    for entity in entityList:
+        if entity.color == 0:
+            if type(entity) == King:
+                char = "♔" + " " * padder
+            if type(entity) == Queen:
+                char = "♕" + " " * padder
+            if type(entity) == Rook:
+                char = "♖" + " " * padder
+            if type(entity) == Bishop:
+                char = "♗" + " " * padder
+            if type(entity) == Knight:
+                char = "♘" + " " * padder
+            if type(entity) == Pawn:
+                char = "♙" + " " * padder
+        if entity.color == 1:
+            if type(entity) == King:
+                char = "♚" + " " * padder
+            if type(entity) == Queen:
+                char = "♛" + " " * padder
+            if type(entity) == Rook:
+                char = "♜" + " " * padder
+            if type(entity) == Bishop:
+                char = "♝" + " " * padder
+            if type(entity) == Knight:
+                char = "♞" + " " * padder
+            if type(entity) == Pawn:
+                char = "♟" + " " * padder
+        boardList[entity.y][entity.x] = char
+    print("==============")
+    for i in range(8):
+        stri = ""
+        for j in range(8):
+            stri += boardList[i][j]
+        print(stri)
+    pass
+
+
 def changeState(gameState, move, purp):
     entityList = jsonDecoderBig(gameState)
+    for entity in entityList:
+        if [entity.x, entity.y] == move[1]:
+            del entity
     for entity in entityList:
         if [entity.x, entity.y] == move[0]:
             entity.x = move[1][0]
@@ -381,13 +437,25 @@ def bestMove(gameState, color, weights):
 
 def chooseAMove(gameState, color, weights):
     otherColor = 1 - color
-    move1 = bestMove(gameState, color, weights)
 
-    game1 = changeState(gameState, move1[1], "none")
-    move = bestMove(game1, otherColor, weights)
-    game2 = changeState(game1, move[1], "none")
-    move = bestMove(game2, color, weights)
-    return move1
+    entityList = jsonDecoderBig(gameState)
+    bestSoFar = 0
+    BestMove = 0
+    theStates = [0, 1, 2]
+    for move in getAllMoves(entityList, color):
+        game1 = changeState(gameState, move[1], "AIC")
+        move1 = bestMove(game1, otherColor, weights)
+        game2 = changeState(game1, move1[1], "AIC")
+        move2 = bestMove(game2, color, weights)
+        if move2[0] > bestSoFar:
+            BestMove = move2[1]
+            bestSoFar = move2[0]
+            theStates[0] = game1
+            theStates[1] = game2
+            theStates[2] = changeState(game2, move2, "None")
+    for state in theStates:
+        debugPrintBoard(state)
+    return [bestSoFar, BestMove]
 
 
 def makeMove(move, eList, turnNo):
@@ -416,8 +484,27 @@ f = open("JSONDATA.json", "r")
 contents = f.read()
 f.close()
 
-
-weights = [-20, 20, 1.03, 1.05, 1.08, 1.12, 1.15, 1.18, 1.21, 1.24]
+#   King    King    x1   x2    x3    x4    x5    x6    x7    x8
+weights = [
+    -20,
+    20,
+    1.0,
+    1.02,
+    1.03,
+    1.07,
+    1.07,
+    1.03,
+    1.02,
+    1.01,
+    1.03,
+    1.05,
+    1.08,
+    1.12,
+    1.15,
+    1.18,
+    1.21,
+    1.24,
+]
 
 window = pygame.display.set_mode((800, 800))
 
@@ -428,6 +515,7 @@ cooldownInit = 30
 cooldown = cooldownInit
 turnNo = 0
 entityList = jsonDecoderBig(contents)
+# debugPrintBoard(contents)
 while True:
     if turnNo % 2 == 1:
         dataList = []
