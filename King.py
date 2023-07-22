@@ -1,13 +1,15 @@
 import pygame
 from HelperFunctions import *
 import time
+from globals import *
 
 
 class King:
-    BlackKing = pygame.image.load("Textures\\BlackKing.png")
-    WhiteKing = pygame.image.load("Textures\\WhiteKing.png")
+    # BlackKing = globals.BlackKing
+    # WhiteKing = globals.WhiteKing
     strType = "king"
     value = 1000
+
     def __init__(self, x, y, color):
         self.x = x
         self.y = y
@@ -21,11 +23,10 @@ class King:
         self.moves += 1
 
     def draw(self, window):
-        self.window = window
         if self.color == 1:
-            img = self.BlackKing
+            img = globals.BlackKing
         else:
-            img = self.WhiteKing
+            img = globals.WhiteKing
         img = pygame.transform.scale(img, (100, 100))
         window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
 

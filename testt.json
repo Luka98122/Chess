@@ -2,50 +2,57 @@
     "GameState": [
         {
             "type": "pawn",
-            "x": 0,
-            "y": 1,
-            "color": 0,
-            "moves": 0
-        },
-        {
-            "type": "pawn",
             "x": 1,
-            "y": 1,
+            "y": 6,
             "color": 0,
             "moves": 0
         },
         {
             "type": "pawn",
             "x": 2,
-            "y": 1,
-            "color": 0,
-            "moves": 0
-        },
-        {
-            "type": "pawn",
-            "x": 3,
-            "y": 1,
+            "y": 7,
             "color": 0,
             "moves": 0
         },
         {
             "type": "pawn",
             "x": 4,
-            "y": 1,
+            "y": 7,
+            "color": 0,
+            "moves": 0
+        },
+        {
+            "type": "pawn",
+            "x": 4,
+            "y": 7,
             "color": 0,
             "moves": 1
         },
         {
             "type": "pawn",
             "x": 5,
-            "y": 1,
+            "y": 7,
+            "color": 0,
+            "moves": 1
+        },
+        {
+            "type": "pawn",
+            "x": 7,
+            "y": 7,
             "color": 0,
             "moves": 0
         },
         {
             "type": "pawn",
-            "x": 6,
-            "y": 1,
+            "x": 0,
+            "y": 7,
+            "color": 0,
+            "moves": 0
+        },
+        {
+            "type": "pawn",
+            "x": 0,
+            "y": 6,
             "color": 0,
             "moves": 0
         },
@@ -53,173 +60,166 @@
             "type": "pawn",
             "x": 7,
             "y": 1,
-            "color": 0,
-            "moves": 0
-        },
-        {
-            "type": "pawn",
-            "x": 0,
-            "y": 6,
             "color": 1,
             "moves": 0
         },
         {
             "type": "pawn",
-            "x": 1,
-            "y": 6,
+            "x": 7,
+            "y": 0,
             "color": 1,
             "moves": 0
         },
         {
             "type": "pawn",
-            "x": 2,
-            "y": 6,
+            "x": 7,
+            "y": 1,
+            "color": 1,
+            "moves": 0
+        },
+        {
+            "type": "pawn",
+            "x": 6,
+            "y": 0,
+            "color": 1,
+            "moves": 0
+        },
+        {
+            "type": "pawn",
+            "x": 4,
+            "y": 0,
             "color": 1,
             "moves": 0
         },
         {
             "type": "pawn",
             "x": 3,
+            "y": 0,
+            "color": 1,
+            "moves": 0
+        },
+        {
+            "type": "pawn",
+            "x": 0,
+            "y": 0,
+            "color": 1,
+            "moves": 0
+        },
+        {
+            "type": "pawn",
+            "x": 6,
+            "y": 0,
+            "color": 1,
+            "moves": 0
+        },
+        {
+            "type": "rook",
+            "x": 1,
+            "y": 6,
+            "color": 0,
+            "moves": 0
+        },
+        {
+            "type": "rook",
+            "x": 3,
+            "y": 7,
+            "color": 0,
+            "moves": 0
+        },
+        {
+            "type": "rook",
+            "x": 1,
+            "y": 6,
+            "color": 1,
+            "moves": 0
+        },
+        {
+            "type": "rook",
+            "x": 4,
+            "y": 7,
+            "color": 1,
+            "moves": 0
+        },
+        {
+            "type": "knight",
+            "x": 3,
+            "y": 0,
+            "color": 0,
+            "moves": 0
+        },
+        {
+            "type": "knight",
+            "x": 1,
+            "y": 0,
+            "color": 0,
+            "moves": 0
+        },
+        {
+            "type": "knight",
+            "x": 0,
+            "y": 1,
+            "color": 1,
+            "moves": 0
+        },
+        {
+            "type": "knight",
+            "x": 6,
+            "y": 1,
+            "color": 1,
+            "moves": 0
+        },
+        {
+            "type": "queen",
+            "x": 7,
+            "y": 4,
+            "color": 0,
+            "moves": 0
+        },
+        {
+            "type": "queen",
+            "x": 7,
             "y": 4,
             "color": 1,
             "moves": 0
         },
         {
-            "type": "pawn",
-            "x": 4,
-            "y": 6,
-            "color": 1,
-            "moves": 0
-        },
-        {
-            "type": "pawn",
-            "x": 5,
-            "y": 6,
-            "color": 1,
-            "moves": 0
-        },
-        {
-            "type": "pawn",
+            "type": "king",
             "x": 6,
-            "y": 6,
-            "color": 1,
-            "moves": 0
-        },
-        {
-            "type": "pawn",
-            "x": 7,
-            "y": 6,
-            "color": 1,
-            "moves": 0
-        },
-        {
-            "type": "rook",
-            "x": 0,
-            "y": 0,
+            "y": 7,
             "color": 0,
             "moves": 0
         },
         {
-            "type": "rook",
-            "x": 7,
-            "y": 0,
-            "color": 0,
-            "moves": 0
-        },
-        {
-            "type": "rook",
-            "x": 0,
-            "y": 7,
+            "type": "king",
+            "x": 6,
+            "y": 2,
             "color": 1,
             "moves": 0
         },
         {
-            "type": "rook",
-            "x": 7,
-            "y": 7,
-            "color": 1,
-            "moves": 0
-        },
-        {
-            "type": "knight",
-            "x": 2,
+            "type": "bishop",
+            "x": 5,
             "y": 2,
             "color": 0,
-            "moves": 1
+            "moves": 0
         },
         {
-            "type": "knight",
+            "type": "bishop",
             "x": 6,
-            "y": 0,
+            "y": 1,
             "color": 0,
             "moves": 0
         },
         {
-            "type": "knight",
-            "x": 1,
-            "y": 7,
-            "color": 1,
-            "moves": 0
-        },
-        {
-            "type": "knight",
+            "type": "bishop",
             "x": 6,
-            "y": 7,
-            "color": 1,
-            "moves": 0
-        },
-        {
-            "type": "queen",
-            "x": 3,
-            "y": 0,
-            "color": 0,
-            "moves": 0
-        },
-        {
-            "type": "queen",
-            "x": 3,
-            "y": 7,
-            "color": 1,
-            "moves": 0
-        },
-        {
-            "type": "king",
-            "x": 4,
-            "y": 0,
-            "color": 0,
-            "moves": 0
-        },
-        {
-            "type": "king",
-            "x": 4,
-            "y": 7,
+            "y": 1,
             "color": 1,
             "moves": 0
         },
         {
             "type": "bishop",
-            "x": 2,
-            "y": 0,
-            "color": 0,
-            "moves": 0
-        },
-        {
-            "type": "bishop",
-            "x": 5,
-            "y": 0,
-            "color": 0,
-            "moves": 0
-        },
-        {
-            "type": "bishop",
-            "x": 5,
-            "y": 7,
-            "color": 1,
-            "moves": 0
-        },
-        {
-            "type": "bishop",
-            "x": 2,
+            "x": 7,
             "y": 7,
             "color": 1,
             "moves": 0

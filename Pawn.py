@@ -5,12 +5,13 @@ from Bishop import *
 from Rook import *
 from Knight import *
 from Queen import *
+from globals import *
 
 
 class Pawn:
     # init
-    BlackPawn = pygame.image.load("Textures\\BlackPawn.png")
-    WhitePawn = pygame.image.load("Textures\\WhitePawn.png")
+    # BlackPawn = globals.BlackPawn
+    # WhitePawn = globals.WhitePawn
     strType = "pawn"
     value = 3
 
@@ -27,9 +28,9 @@ class Pawn:
 
     def draw(self, window):
         if self.color == 1:
-            img = self.BlackPawn
+            img = globals.BlackPawn
         else:
-            img = self.WhitePawn
+            img = globals.WhitePawn
         img = pygame.transform.scale(img, (80, 100))
         window.blit(img, pygame.Rect(self.x * 100 + 10, self.y * 100, 100, 100))
 

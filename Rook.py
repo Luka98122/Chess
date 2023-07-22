@@ -1,11 +1,13 @@
 import pygame
+from globals import *
 
 
 class Rook:
-    BlackRook = pygame.image.load("Textures\\BlackRook.png")
-    WhiteRook = pygame.image.load("Textures\\WhiteRook.png")
+    # BlackRook = globals.BlackRook
+    # WhiteRook = globals.WhiteRook
     strType = "rook"
     value = 5
+
     def __init__(self, x, y, color):
         self.x = x
         self.y = y
@@ -19,9 +21,9 @@ class Rook:
 
     def draw(self, window):
         if self.color == 1:
-            img = self.BlackRook
+            img = globals.BlackRook
         else:
-            img = self.WhiteRook
+            img = globals.WhiteRook
         img = pygame.transform.scale(img, (100, 100))
         window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
 

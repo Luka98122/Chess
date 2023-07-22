@@ -1,11 +1,13 @@
 import pygame
+from globals import *
 
 
 class Bishop:
-    BlackBishop = pygame.image.load("Textures\\BlackBishop.png")
-    WhiteBishop = pygame.image.load("Textures\\WhiteBishop.png")
+    # BlackBishop = globals.BlackBishop
+    # WhiteBishop = globals.WhiteBishop
     strType = "bishop"
     value = 4
+
     def __init__(self, x, y, color):
         self.x = x
         self.y = y
@@ -19,9 +21,9 @@ class Bishop:
 
     def draw(self, window):
         if self.color == 1:
-            img = self.BlackBishop
+            img = globals.BlackBishop
         else:
-            img = self.WhiteBishop
+            img = globals.WhiteBishop
         img = pygame.transform.scale(img, (80, 100))
         window.blit(img, pygame.Rect(self.x * 100 + 10, self.y * 100, 100, 100))
 

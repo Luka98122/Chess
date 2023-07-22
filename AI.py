@@ -26,22 +26,21 @@ def is_check(king, entityList):
     return False
 
 
-def is_checkmate(king, entityList):
-    for move in getAllMoves(entityList, king.color):
-        entityList1 = changeStateFromList(entityList, move)
+def is_checkmate(king, ENtityLIst):
+    for move in getAllMoves(ENtityLIst, king.color):
+        entityList1 = changeStateFromList(ENtityLIst, move)
         if is_check(king, entityList1) == False:
             return False
     return True
 
 
-def scoreBoard(gameState, color, weights: list):
+def scoreBoard(ENtityList, color, weights: list):
     globals.counter += 1
     # 0                1                 2   3   4   5   6   7   8   9
     # [ourKingInCheck, theirKingInCheck, y1, y2, y3, y4, y5, y6, y7, y8]
-    entityList = jsonDecoderBig(gameState)
     score = 0
     tScore = 0
-    for entity in entityList:
+    for entity in ENtityList:
         if entity.color == color:
             if type(entity) != King:
                 if color == 0:
@@ -62,13 +61,13 @@ def scoreBoard(gameState, color, weights: list):
 
         # If our king is in check
         if type(entity) == King and entity.color == color:
-            if is_checkmate(entity, entityList):
+            if is_checkmate(entity, ENtityList):
                 score -= weights[0]
                 tScore += weights[0]
 
         # If their king is in check
         if type(entity) == King and entity.color != color:
-            if is_checkmate(entity, entityList):
+            if is_checkmate(entity, ENtityList):
                 score += weights[1]
                 tScore -= weights[1]
     return score - tScore
@@ -290,14 +289,14 @@ def jsonDecoderBig(data):
     return rL
 
 
-def getAllMoves(entityList, color):
+def getAllMoves(ENTItyList, color):
     allMoves = []
-    for entity in entityList:
+    for entity in ENTItyList:
         if type(entity) == King:
             a = 2
         if entity.color != color:
             continue
-        spots = possibleSpots(entity, entityList)
+        spots = possibleSpots(entity, ENTItyList)
         for move in spots:
             allMoves.append([[entity.x, entity.y], move])
     return allMoves
@@ -314,8 +313,7 @@ def changeStateFromList(entityList, move):
     return entityList
 
 
-def debugPrintBoard(gameState):
-    entityList = jsonDecoderBig(gameState)
+def debugPrintBoard(ENTityList):
     boardList = []
     padder = 2
     for i in range(8):
@@ -325,7 +323,7 @@ def debugPrintBoard(gameState):
                 boardList[i].append("⬜ ")
             else:
                 boardList[i].append("⬛ ")
-    for entity in entityList:
+    for entity in ENTityList:
         if entity.color == 0:
             if type(entity) == King:
                 char = "♔" + " " * padder
@@ -362,27 +360,19 @@ def debugPrintBoard(gameState):
     pass
 
 
-def changeState(gameState, move, purp):
-    entityList = jsonDecoderBig(gameState)
-    for entity in entityList:
+def changeState(EntitYList, move, purp):
+    EntitYList = deepcopy(EntitYList)
+    for entity in EntitYList:
         if [entity.x, entity.y] == move[1]:
             del entity
-    for entity in entityList:
+    for entity in EntitYList:
         if [entity.x, entity.y] == move[0]:
             entity.x = move[1][0]
             entity.y = move[1][1]
             if purp == "AI":
                 print(f"Moved {type(entity)} to {entity.x} {entity.y}")
             break
-
-    dataList = []
-    turnNo = json.loads(gameState)["TurnNo"]
-    for entity in entityList:
-        data = jsonSerializer(entity)
-        dataList.append(data)
-    info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
-    json_object = json.dumps(info, indent=4)
-    return json_object
+    return EntitYList
 
 
 def populate(tree: Tree, gameState, color):
@@ -461,49 +451,39 @@ def chooseAMove(gameState, color, weights):
     return [bestSoFar, BestMove]
 
 
-def chooseAMove2(gameState, color, weights, depthLeft):
-    entityList = jsonDecoderBig(gameState)
+def chooseAMove2(EntityList, color, weights, depthLeft):
     bestScore = -1000
     # bestmove = [[0, 6], [0, 4]]
-    for move in getAllMoves(entityList, color):
+    for move in getAllMoves(EntityList, color):
         if depthLeft != 0:
-            newGameState = changeState(gameState, move, "None")
-            res = chooseAMove2(newGameState, 1 - color, weights, depthLeft - 1)
+            newEntityList = changeState(EntityList, move, "None")
+            res = chooseAMove2(newEntityList, 1 - color, weights, depthLeft - 1)
             if res[0] > bestScore:
                 bestScore = res[0]
-                bestmove = move
+                bestMove = move
         else:
-            newGameState = changeState(gameState, move, "None")
-            score = scoreBoard(newGameState, color, weights)
+            newEntityList = changeState(EntityList, move, "None")
+            score = scoreBoard(newEntityList, color, weights)
             if score > bestScore:
-                bestmove = move
                 bestScore = score
+                bestMove = move
     if depthLeft == 2:
-        debugPrintBoard(changeState(gameState, bestmove, "None"))
-    return [bestScore, bestmove]
+        debugPrintBoard(changeState(EntityList, bestMove, "None"))
+    return [bestScore, bestMove]
     pass
 
 
 def makeMove(move, eList, turnNo):
     dataList = []
-    for entity in entityList:
+    for entity in eList:
+        if entity.x == move[1][1][0] and entity.y == move[1][1][1]:
+            del entity
+    for entity in eList:
         if entity.x == move[1][0][0] and entity.y == move[1][0][1]:
             entity.x = move[1][1][0]
             entity.y = move[1][1][1]
-        data = jsonSerializer(entity)
-        dataList.append(data)
-    info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
-    json_object = json.dumps(info, indent=4)
-    f = open("testt.json", "w")
-    f.write(json_object)
-    f.close()
 
-    for entity in eList:
-        data = jsonSerializer(entity)
-        dataList.append(data)
-    state = changeState(json_object, move[1], "AI")
-    res = jsonDecoderBig(state)
-    return res
+    return eList
 
 
 f = open("JSONDATA.json", "r")
@@ -551,7 +531,7 @@ while True:
         info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
         json_object = json.dumps(info, indent=4)
         start = time.time()
-        move = chooseAMove2(json_object, 1, weights, 2)
+        move = chooseAMove2(entityList, 1, weights, 1)
         end = time.time()
         print(f"{end-start} seconds. ")
         moveX1 = move[1][0][0]

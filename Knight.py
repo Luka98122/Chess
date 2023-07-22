@@ -1,9 +1,10 @@
 import pygame
+from globals import *
 
 
 class Knight:
-    BlackKnight = pygame.image.load("Textures\\BlackKnight.png")
-    WhiteKnight = pygame.image.load("Textures\\WhiteKnight.png")
+    # BlackKnight = globals.BlackKnight
+    # WhiteKnight = globals.WhiteKnight
     strType = "knight"
     value = 3
 
@@ -20,9 +21,9 @@ class Knight:
 
     def draw(self, window):
         if self.color == 1:
-            img = self.BlackKnight
+            img = globals.BlackKnight
         else:
-            img = self.WhiteKnight
+            img = globals.WhiteKnight
         img = pygame.transform.scale(img, (100, 100))
         window.blit(img, pygame.Rect(self.x * 100, self.y * 100, 100, 100))
 
