@@ -454,7 +454,8 @@ def chooseAMove(gameState, color, weights):
 def chooseAMove2(EntityList, color, weights, depthLeft):
     bestScore = -1000
     # bestmove = [[0, 6], [0, 4]]
-    for move in getAllMoves(EntityList, color):
+    var = getAllMoves(EntityList, color)
+    for move in var:
         if depthLeft != 0:
             newEntityList = changeState(EntityList, move, "None")
             res = chooseAMove2(newEntityList, 1 - color, weights, depthLeft - 1)
@@ -531,9 +532,11 @@ while True:
         info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
         json_object = json.dumps(info, indent=4)
         start = time.time()
-        move = chooseAMove2(entityList, 1, weights, 1)
+        move = chooseAMove2(entityList, 1, weights, 2)
         end = time.time()
-        print(f"{end-start} seconds. ")
+        print(
+            f"{end-start} seconds. {globals.counter} considered. {globals.counter/int(end-start)} per second."
+        )
         moveX1 = move[1][0][0]
         moveX2 = move[1][1][0]
         moveY1 = move[1][0][1]
