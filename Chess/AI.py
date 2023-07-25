@@ -3,13 +3,6 @@ import time
 import json
 import threading
 from copy import *
-from ctypes import cdll, c_char_p
-
-#lib = cdll.LoadLibrary("ai_dll\\x64\\Debug\\ai_dll.dll")
-#HelloWorld = lib.HelloWorld
-#HelloWorld.restype = c_char_p
-
-#print(HelloWorld("Pop").decode())
 
 
 from Pawn import *
@@ -151,6 +144,7 @@ def possibleSpots(entity, entityList):
                 if status[0] == False:
                     spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
                 elif status[0] == True:
+
                     if status[1] == None:
                         break
                     elif status[1] != None:
@@ -170,6 +164,7 @@ def possibleSpots(entity, entityList):
                 if status[0] == False:
                     spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
                 elif status[0] == True:
+
                     if status[1] == None:
                         break
                     elif status[1] != None:
@@ -189,6 +184,7 @@ def possibleSpots(entity, entityList):
                 if status[0] == False:
                     spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
                 elif status[0] == True:
+
                     if status[1] == None:
                         break
                     elif status[1] != None:
@@ -208,6 +204,7 @@ def possibleSpots(entity, entityList):
                 if status[0] == False:
                     spots.append([entity.x + dir[0] * j, entity.y + dir[1] * j])
                 elif status[0] == True:
+
                     if status[1] == None:
                         break
                     elif status[1] != None:
@@ -230,6 +227,7 @@ def possibleSpots(entity, entityList):
             if status[0] == False:
                 spots.append([entity.x + dir[0], entity.y + dir[1]])
             elif status[0] == True:
+
                 if status[1] == None:
                     pass
                 elif status[1] != None:
@@ -488,45 +486,6 @@ def makeMove(move, eList, turnNo):
 
     return eList
 
-def makeEmoji(entityList):
-    boardList = []
-    for i in range(8):
-        boardList.append([""])
-        for j in range(8):
-            if (i + j) % 2 != 0:
-                boardList[i]+="⬜"
-            else:
-                boardList[i]+="⬛"
-    for entity in entityList:
-        if entity.color == 0:
-            if type(entity) == King:
-                char = "♔"
-            if type(entity) == Queen:
-                char = "♕"
-            if type(entity) == Rook:
-                char = "♖"
-            if type(entity) == Bishop:
-                char = "♗"
-            if type(entity) == Knight:
-                char = "♘"
-            if type(entity) == Pawn:
-                char = "♙"
-        if entity.color == 1:
-            if type(entity) == King:
-                char = "♚"
-            if type(entity) == Queen:
-                char = "♛"
-            if type(entity) == Rook:
-                char = "♜"
-            if type(entity) == Bishop:
-                char = "♝"
-            if type(entity) == Knight:
-                char = "♞"
-            if type(entity) == Pawn:
-                char = "♟"
-        boardList[entity.y][entity.x] = char
-    return boardList
-
 
 f = open("JSONDATA.json", "r")
 contents = f.read()
@@ -564,7 +523,6 @@ cooldown = cooldownInit
 turnNo = 0
 entityList = jsonDecoderBig(contents)
 # debugPrintBoard(contents)
-emjiList = makeEmoji(entityList)
 while True:
     if turnNo % 2 == 1:
         dataList = []
