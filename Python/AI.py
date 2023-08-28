@@ -78,8 +78,10 @@ def scoreBoard(ENtityList, color, weights: list):
                 score += weights[1]
                 tScore -= weights[1]
     return score - tScore
-    pass
 
+
+def scoreBoardEmoji():
+    pass
 
 # Collapse1
 def canKingGoHere(x, y, king, entityList):
@@ -237,6 +239,148 @@ def possibleSpots(entity, entityList):
                         spots.append([entity.x + dir[0], entity.y + dir[1]])
     return spots
 
+def possibleSpotsEmoji(entity : str, x, y, entityList):
+    spots = []
+    if entity in "♙♟":
+        if entity == "♙":
+            direction = 1
+        if entity == "♟":
+            direction = -1
+        if spotOccupied(x, y + direction, entityList)[0] == False:
+            spots.append([x, y + direction])
+        if (
+            spotOccupied(x + 1, y + direction, entityList)[0] == True
+            and spotOccupied(x + 1, y + direction, entityList)[1] != None
+            and spotOccupied(x + 1, y + direction, entityList)[1].color
+            != entity.color
+        ):
+            if direction == 1:
+                if spotOccupied(x + 1, y + direction, entityList)[1] in "♚♛♝♜♟♞":
+                    spots.append([x + 1, y + direction])
+            if direction == -1:
+                if spotOccupied(x + 1, y + direction, entityList)[1] not in "♚♛♝♜♟♞":
+                    spots.append([x + 1, y + direction])
+        if (
+            spotOccupied(x - 1, y + direction, entityList)[0] == True
+            and spotOccupied(x - 1, y + direction, entityList)[1] != None
+            and spotOccupied(x - 1, y + direction, entityList)[1].color
+            != entity.color
+        ):
+            if direction == 1:
+                if spotOccupied(x - 1, y + direction, entityList)[1] in "♖♘♗♕♔♙":
+                    spots.append([x - 1, y + direction])
+            if direction == -1:
+                if spotOccupied(x - 1, y + direction, entityList)[1] not in "♖♘♗♕♔♙":
+                    spots.append([x - 1, y + direction])
+        if entity.moves == 0:
+            if spotOccupied(x, y + direction, entityList)[0] == False:
+                if (
+                    spotOccupied(x, y + direction * 2, entityList)[0]
+                    == False
+                ):
+                    spots.append(
+                        [
+                            x,
+                            y + direction * 2,
+                        ]
+                    )
+    if type(entity) == Rook:
+        spots = []
+        dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]]
+        for i in range(4):
+            dir = dirs[i]
+            for j in range(1, 9):
+                status = spotOccupied(
+                    x + dir[0] * j, y + dir[1] * j, entityList
+                )
+                if status[0] == False:
+                    spots.append([x + dir[0] * j, y + dir[1] * j])
+                elif status[0] == True:
+                    if status[1] == None:
+                        break
+                    elif status[1] != None:
+                        if status[1].color != entity.color:
+                            spots.append([x + dir[0] * j, y + dir[1] * j])
+                            break
+                        else:
+                            break
+    if type(entity) == Bishop:
+        dirs = [[1, -1], [1, 1], [-1, 1], [-1, -1]]
+        for i in range(4):
+            dir = dirs[i]
+            for j in range(1, 9):
+                status = spotOccupied(
+                    x + dir[0] * j, y + dir[1] * j, entityList
+                )
+                if status[0] == False:
+                    spots.append([x + dir[0] * j, y + dir[1] * j])
+                elif status[0] == True:
+                    if status[1] == None:
+                        break
+                    elif status[1] != None:
+                        if status[1].color != entity.color:
+                            spots.append([x + dir[0] * j, y + dir[1] * j])
+                            break
+                        else:
+                            break
+    if type(entity) == Queen:
+        dirs = [[1, -1], [1, 1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]
+        for i in range(8):
+            dir = dirs[i]
+            for j in range(1, 9):
+                status = spotOccupied(
+                    x + dir[0] * j, y + dir[1] * j, entityList
+                )
+                if status[0] == False:
+                    spots.append([x + dir[0] * j, y + dir[1] * j])
+                elif status[0] == True:
+                    if status[1] == None:
+                        break
+                    elif status[1] != None:
+                        if status[1].color != entity.color:
+                            spots.append([x + dir[0] * j, y + dir[1] * j])
+                            break
+                        else:
+                            break
+    if type(entity) == King:
+        dirs = [[1, -1], [1, 1], [-1, 1], [-1, -1], [0, 1], [0, -1], [1, 0], [-1, 0]]
+        for i in range(8):
+            dir = dirs[i]
+            for j in range(1, 2):
+                status = spotOccupied(
+                    x + dir[0] * j, y + dir[1] * j, entityList
+                )
+                if status[0] == False:
+                    spots.append([x + dir[0] * j, y + dir[1] * j])
+                elif status[0] == True:
+                    if status[1] == None:
+                        break
+                    elif status[1] != None:
+                        if status[1].color != entity.color:
+                            spots.append([x + dir[0] * j, y + dir[1] * j])
+                            break
+                        else:
+                            break
+        realSpots = []
+        for spot in spots:
+            res = canKingGoHere(spot[0], spot[1], entity, entityList)
+            if res == True:
+                realSpots.append(spot)
+        return realSpots
+    if type(entity) == Knight:
+        dirs = [[-1, -2], [1, -2], [2, -1], [2, 1], [1, 2], [-1, 2], [-2, 1], [-2, -1]]
+        for i in range(8):
+            dir = dirs[i]
+            status = spotOccupied(x + dir[0], y + dir[1], entityList)
+            if status[0] == False:
+                spots.append([x + dir[0], y + dir[1]])
+            elif status[0] == True:
+                if status[1] == None:
+                    pass
+                elif status[1] != None:
+                    if status[1].color != entity.color:
+                        spots.append([x + dir[0], y + dir[1]])
+    return spots
 
 def jsonSerializer(object):
     resList = {
@@ -376,6 +520,12 @@ def changeState(EntitYList, move, purp):
             break
     return EntitYList
 
+def changeStateEmoji(emojiBoard, move):
+    emojiBoard2 = deepcopy(emojiBoard)
+    emojiBoard2[move[1][1]][move[1][0]] = emojiBoard2[move[0][1]][move[0][0]]
+    emojiBoard2[move[0][1]][move[0][0]] = "X"
+    return emojiBoard2
+    
 
 def populate(tree: Tree, gameState, color):
     res = jsonDecoderBig(gameState)
@@ -452,21 +602,58 @@ def chooseAMove(gameState, color, weights):
         debugPrintBoard(state)
     return [bestSoFar, BestMove]
 
+# ♖♘♗♕♔♙ 
+# ♜♞♝♛♚♟
+def emojiToEList(emojiBoard):
+    eList = []
+    for i in range(8):
+        for j in range(8):
+            c = emojiBoard[i][j]
+            if c == "♙":
+                eList.append(Pawn(j,i,0))
+            elif c == "♔":
+                eList.append(King(j,i,0))
+            elif c == "♕":
+                eList.append(Queen(j,i,0))
+            elif c == "♖":
+                eList.append(Rook(j,i,0))
+            elif c == "♘":
+                eList.append(Knight(j,i,0))
+            elif c == "♗":
+                eList.append(Bishop(j,i,0))
+            
+            # black
+            elif c == "♟":
+                eList.append(Pawn(j,i,1))
+            elif c == "♚":
+                eList.append(King(j,i,1))
+            elif c == "♛":
+                eList.append(Queen(j,i,1))
+            elif c == "♜":
+                eList.append(Rook(j,i,1))
+            elif c == "♞":
+                eList.append(Knight(j,i,1))
+            elif c == "♝":
+                eList.append(Bishop(j,i,1))
+            
+
 
 def chooseAMove2(EntityList, color, weights, depthLeft):
     bestScore = -1000
     # bestmove = [[0, 6], [0, 4]]
     var = getAllMoves(EntityList, color)
+    EmojiBoard = makeEmoji(EntityList)
     for move in var:
         if depthLeft != 0:
-            newEntityList = changeState(EntityList, move, "None")
+            newEntityList = changeState(EntityList, move)
             res = chooseAMove2(newEntityList, 1 - color, weights, depthLeft - 1)
             if res[0] > bestScore:
                 bestScore = res[0]
                 bestMove = move
         else:
-            newEntityList = changeState(EntityList, move, "None")
-            score = scoreBoard(newEntityList, color, weights)
+            
+            newEmojiBoard = changeStateEmoji(EmojiBoard, move, "None")
+            score = scoreBoard(newEmojiBoard, color, weights)
             if score > bestScore:
                 bestScore = score
                 bestMove = move
@@ -565,6 +752,7 @@ turnNo = 0
 entityList = jsonDecoderBig(contents)
 # debugPrintBoard(contents)
 emjiList = makeEmoji(entityList)
+emjiList = changeStateEmoji(emjiList, [[0,1],[0,3]])
 while True:
     if turnNo % 2 == 1:
         dataList = []
