@@ -79,51 +79,54 @@ void debugMakeBoard(vector<vector<int>> board) {
 	board[6] = "♙♙♙♙♙♙♙♙";
 	board[7] = "♖♘♗♕♔♗♘♖";
 	*/
-	vector<string> boardic = {};
+	wstring myWString = L"";
 	for (int i = 0; i < 8;i++) {
-		string myStr = "";
-		boardic.push_back(myStr.c_str());
 		for (int j = 0; j < 8; j++) {
 			if (board[i][j] == 1)
-				boardic[i] += "♟";
+
+				myWString += L"♟";
 			else if (board[i][j] == 2)
-				boardic[i] += "♜";
+				myWString += L"♜";
 			else if (board[i][j] == 3)
-				boardic[i] += "♞";
+				myWString += L"♞";
 			else if (board[i][j] == 4)
-				boardic[i] += "♝";
+				myWString += L"♝";
 			else if (board[i][j] == 5)
-				boardic[i] += "♛";
+				myWString += L"♛";
 			else if (board[i][j] == 6)
-				boardic[i] += "♚";
+				myWString += L"♚";
 			// Other
 			else if (board[i][j] == -1)
-				boardic[i] += "♙";
+				myWString += L"♙";
 			else if (board[i][j] == -2)
-				boardic[i] += "♖";
+				myWString += L"♖";
 			else if (board[i][j] == -3)
-				boardic[i] += "♘";
+				myWString += L"♘";
 			else if (board[i][j] == -4)
-				boardic[i] += "♗";
+				myWString += L"♗";
 			else if (board[i][j] == -5)
-				boardic[i] += "♕";
+				myWString += L"♕";
 			else if (board[i][j] == -6)
-				boardic[i] += "♔";
+				myWString += L"♔";
 			else if (board[i][j] == 0)
-				boardic[i] += "ፙ";
+				myWString += L"ፙ";
 
 		}
+		myWString += L"\n";
 	}
+	OutputDebugStringW(myWString.c_str());
+
 	std::ofstream outFile("hello_world.txt");
-	
+	/*
 	for (int i = 0;i < 8;i++) {
-		printf((boardic[i]+"\n").c_str());
+		printf((myWString[i]+"\n").c_str());
  		if (outFile.is_open()) {
-			outFile << boardic[i]+"\n";
+			outFile << myWString[i]+"\n";
 		}
 	}
 	outFile.close();
-
+	*/
+	
 }
 
 vector<vector<int>> emptyTestBoard = {
@@ -793,7 +796,8 @@ int main()
 			OutputDebugStringA(row.c_str());
 			row = "";
 		}
-		OutputDebugStringA("====================");
+		OutputDebugStringA("====================\n");
+		debugMakeBoard(board);
 	}
 	writeBoardStateToFile(board);
 	debugMakeBoard(board);
