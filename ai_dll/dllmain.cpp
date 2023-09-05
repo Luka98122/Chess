@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <string>
-
+#include <fstream>
 #include <cstdio>
 #include <windows.h>
 #include <string>
@@ -81,7 +81,8 @@ void debugMakeBoard(vector<vector<int>> board) {
 	*/
 	vector<string> boardic = {};
 	for (int i = 0; i < 8;i++) {
-		boardic.push_back("");
+		string myStr = "";
+		boardic.push_back(myStr.c_str());
 		for (int j = 0; j < 8; j++) {
 			if (board[i][j] == 1)
 				boardic[i] += "♟";
@@ -113,10 +114,15 @@ void debugMakeBoard(vector<vector<int>> board) {
 
 		}
 	}
-
+	std::ofstream outFile("hello_world.txt");
+	
 	for (int i = 0;i < 8;i++) {
 		printf((boardic[i]+"\n").c_str());
+ 		if (outFile.is_open()) {
+			outFile << boardic[i]+"\n";
+		}
 	}
+	outFile.close();
 
 }
 
@@ -310,7 +316,7 @@ vector<CMove> pawnMoves(int y,int x, vector<vector<int>> board) {
 vector<CMove> rookMoves(int y, int x, vector<vector<int>> board) {
 	vector<CMove> moves;
 	int color = board[y][x]/abs(board[y][x]);
-	vector<vec2> directions{ {-1,0},{0,-1}, {1,0},{1,1} };
+	vector<vec2> directions{ {-1,0},{0,-1}, {1,0},{0,1} };
 	for (int i = 0; i<4;i++) {
 		vec2 direction = directions[i];
 		for (int j = 1; j < 9;j++) {
@@ -704,8 +710,10 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers = 
 			color *= -1;
 			if (move.score >= highScore) {
 				bestMove = move;
+				highScore = bestMove.score;
 				if (layers == originalLayers) {
 					bestMove = { moves[i], move.score };
+					debugMove(move.move);
 				}
 			}
 		}
@@ -717,9 +725,42 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers = 
 }
 
 
+void writeBoardStateToFile(vector<vector<int>> board) {
+	ofstream myfile("target.txt");
+
+	// Check if the file is open
+	if (myfile.is_open()) {
+		for (int i = 0;i < 8;i++) {
+			string thisLine = "";
+			for (int j = 0;j < 8;j++) {
+				if (j == 7) {
+					thisLine += to_string(board[i][j]);
+				}
+				else {
+					thisLine += to_string(board[i][j])+";";
+				}
+			}
+			thisLine += "\n";
+			myfile << thisLine;
+			printf(thisLine.c_str());
+		}
+		
+		// Close the file
+		myfile.close();
+	}
+	else {
+		std::cout << "Unable to open file";
+	}
+}
+
 
 int main()
 {
+	// Set console code page to UTF-8 so console known how to interpret string data
+	SetConsoleOutputCP(CP_UTF8);
+
+	// Enable buffering to prevent VS from chopping up UTF-8 byte sequences
+	//setvbuf(stdout, nullptr, _IOFBF, 1000);
 	locale::global(locale("en_US.UTF-8"));
 	wcout.imbue(locale());
 	printf("Hello World!\n");
@@ -738,7 +779,23 @@ int main()
 		ScoredMove moveToMake = layeredMoveChoice(board, col, 2, col, 2);
 		board = makeMove(board, moveToMake.move);
 		col *= -1;
+		for (int i = 0;i < 8;i++) {
+			string row = "";
+			for (int j = 0; j < 8; j++) {
+				if (board[i][j] >= 0) {
+					row += " " + to_string(board[i][j]);
+				}
+				else {
+					row += to_string(board[i][j]);
+				}
+			}
+			row = row + "\n";
+			OutputDebugStringA(row.c_str());
+			row = "";
+		}
+		OutputDebugStringA("====================");
 	}
+	writeBoardStateToFile(board);
 	debugMakeBoard(board);
 	//debugMove(otherMove);
 	debugMove(otherMove.move);
