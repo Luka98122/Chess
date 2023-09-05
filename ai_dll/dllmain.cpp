@@ -53,6 +53,13 @@ public:
 };
 
 
+class testCase {
+public:
+	vector<vector<int>> board;
+	ScoredMove expectedBestMove;
+	int color;
+};
+
 
 int add(int a, int b) {
 	return a + b;
@@ -392,6 +399,18 @@ vector<CMove> knightMoves(int y, int x, vector<vector<int>> board) {
 	}
 	return moves;
 }
+
+bool areMovesEqual(CMove move1, CMove move2) {
+	if (move1.from.x == move2.from.x && move1.from.y == move2.from.y && move1.to.x == move2.to.x && move1.to.y == move2.to.y) {
+		return true;
+	}
+	return false;
+}
+
+
+
+
+
 
 vector<CMove> bishopMoves(int y, int x, vector<vector<int>> board) {
 	vector<CMove> moves;
@@ -757,21 +776,57 @@ void writeBoardStateToFile(vector<vector<int>> board) {
 }
 
 
+bool runTestCase(testCase tCase) {
+	ScoredMove gotMove = layeredMoveChoice(tCase.board, tCase.color, 2, tCase.color, 2);
+	if (areMovesEqual(gotMove.move, tCase.expectedBestMove.move) == true && tCase.expectedBestMove.score == gotMove.score) {
+		return true;
+	}
+	return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 int main()
 {
-	// Set console code page to UTF-8 so console known how to interpret string data
 	SetConsoleOutputCP(CP_UTF8);
 
-	// Enable buffering to prevent VS from chopping up UTF-8 byte sequences
-	//setvbuf(stdout, nullptr, _IOFBF, 1000);
 	locale::global(locale("en_US.UTF-8"));
 	wcout.imbue(locale());
 	printf("Hello World!\n");
 	vec2 v(3, 4);
 
-	CMove m(v, vec2(7, 8));
+	CMove m(vec2(6, 0), vec2(5, 2));
+	CMove m2(vec2(3, 1), vec2(3, 3));
+
 	vector<CMove> moves;
 	vector<vector<int>> board = makeBoard();
+	ScoredMove movic = layeredMoveChoice(testBoard, 1, 2, 1, 2);
+	//Init test cases
+
+	testCase case1 = { board, ScoredMove {m,10.1592045}, 1 };
+	testCase case2 = { testBoard, ScoredMove {m2,22.9216003}, 1 };
+
+	// End of test cases
+
+
+
+	// run them
+	bool res1 = runTestCase(case1);
+	bool res2 = runTestCase(case2);
+
+
+	// end of run
 	moves = getMoves(board, 1);
 	vector<vector<int>> newBoard = makeMove(board, moves[0]);
 	//printf(to_string(scoreBoard(board, 1)).c_str());
