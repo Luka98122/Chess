@@ -3,11 +3,15 @@ import time
 import json
 import threading
 from copy import *
+from ctypes import *
 from ctypes import cdll, c_char_p
+import numpy
+ARRAY_1D = numpy.ctypeslib.ndpointer(dtype=numpy.int32, ndim=1, flags='C')
 
-#lib = cdll.LoadLibrary("ai_dll\\x64\\Debug\\ai_dll.dll")
-#HelloWorld = lib.HelloWorld
-#HelloWorld.restype = c_char_p
+lib = cdll.LoadLibrary("C:\\Users\\luka\\source\\repos\\Chess\\ai_dll\\x64\\Debug\\ai_dll.dll")
+HelloWorld = lib.pickMove
+lib.pickMove.argtypes = [POINTER(c_int), c_int, c_int, c_int, c_int, c_int, c_int]
+HelloWorld.restype = c_int
 
 #print(HelloWorld("Pop").decode())
 
@@ -23,6 +27,41 @@ from HelperFunctions import *
 from Trees import *
 
 globals.counter = 0
+
+
+
+
+def getCBoardFromEList(entityList):
+    board = []
+    for i in range(8):
+        board.append([0,0,0,0,0,0,0,0])
+    for entity in entityList:
+        if entity.color == 0:
+            colMultiplier = 1
+        else:
+            colMultiplier = -1
+        eType = type(board[entity.y][entity.x])
+        
+        if eType == Pawn:
+            board[entity.y][entity.x] = 1
+        if eType == Knight:
+            board[entity.y][entity.x] = 3
+        if eType == Rook:
+            board[entity.y][entity.x] = 2
+        if eType == Bishop:
+            board[entity.y][entity.x] = 4
+        if eType == Queen:
+            board[entity.y][entity.x] = 5
+        if eType == King:
+            board[entity.y][entity.x] = 6
+        board[entity.y][entity.x] *= colMultiplier
+        
+    return board
+
+
+
+
+
 
 
 def is_check(king, entityList):
@@ -762,7 +801,22 @@ while True:
         info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
         json_object = json.dumps(info, indent=4)
         start = time.time()
-        move = chooseAMove2(entityList, 1, weights, 2)
+        board = getCBoardFromEList(entityList)
+        arr = numpy.array(board, dtype=numpy.int32)  
+        flat_arr = arr.flatten()
+        print(type(lib))
+        print(type(lib.pickMove))
+        print(type(flat_arr))
+        print(type(arr.shape[0]))
+        print(type(arr.shape[1]))
+        listToPass = []
+        c_array = (c_int * 64)()
+        counter = 0
+        for el in flat_arr:
+            c_array[counter] = el
+            counter+=1
+        move = lib.pickMove(c_array, 8, 8,-1, 2, -1, 2)
+        #move = chooseAMove2(entityList, 1, weights, 2)
         end = time.time()
         print(
             f"{end-start} seconds. {globals.counter} considered. {globals.counter/int(end-start)} per second."

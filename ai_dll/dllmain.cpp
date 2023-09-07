@@ -1,69 +1,24 @@
 ﻿#include "pch.h"
-#include <iostream>
-#include <stdio.h>
-#include <string>
-#include <fstream>
-#include <cstdio>
-#include <windows.h>
-#include <string>
-
-#define MAX_INPUT_LENGTH 255
-
-std::string readSpecialInput() {
-	wchar_t wstr[MAX_INPUT_LENGTH];
-	char mb_str[MAX_INPUT_LENGTH * 3 + 1];
-
-	unsigned long read;
-	void* con = GetStdHandle(STD_INPUT_HANDLE);
-
-	ReadConsole(con, wstr, MAX_INPUT_LENGTH, &read, NULL);
-	int size = WideCharToMultiByte(CP_UTF8, 0, wstr, read, mb_str, sizeof(mb_str), NULL, NULL);
-	mb_str[size] = 0;
-
-	return std::string(mb_str);
-}
+#include "dllmain.h"
+#include "Helpers.h"
+#include "TestCases.h"
 
 using namespace std;
 
 
-class vec2 {
-	public:
-		int x;
-		int y;
-		vec2(int x=0, int y=0) {
-			this->x = x;
-			this->y = y;
+
+extern "C" {
+	__declspec(dllexport) ScoredMove pickMove(int* flatArray, int rows, int cols, int color, int layers, int originalColor, int originalLayers) {
+		std::vector<std::vector<int>> board(rows, std::vector<int>(cols));
+		for (int i = 0; i < rows; ++i) {
+			for (int j = 0; j < cols; ++j) {
+				board[i][j] = flatArray[i * cols + j];
+			}
 		}
-};
-
-class CMove {
-	public:
-		vec2 from;
-		vec2 to;
-		CMove(const vec2 &from = {0,0}, const vec2& to = {0,0}) {
-			this->from = from;
-			this->to = to;
-		}
-};
-
-class ScoredMove {
-public:
-	CMove move;
-	float score;
-};
-
-
-class testCase {
-public:
-	vector<vector<int>> board;
-	ScoredMove expectedBestMove;
-	int color;
-};
-
-
-int add(int a, int b) {
-	return a + b;
+		return layeredMoveChoice(board,color,layers,originalColor,originalLayers).score;
+	}
 }
+
 
 
 void debugMove(CMove move) {
@@ -238,21 +193,7 @@ float scoreBoard(vector<vector<int>> board, int ourColor) {
 }
 
 
-int demos() {
-	int num1;
-	printf("Number a: ");
-	scanf("%d", &num1);
-	int num2;
-	printf("Number b: ");
-	scanf("%d", &num2);
 
-	int number = add(num1, num2);
-
-	string numberStr = to_string(number);
-
-	printf(numberStr.c_str());
-	return 0;
-}
 
 
 vector<vector<int>> makeMove(vector<vector<int>> board, CMove move) {
@@ -400,12 +341,7 @@ vector<CMove> knightMoves(int y, int x, vector<vector<int>> board) {
 	return moves;
 }
 
-bool areMovesEqual(CMove move1, CMove move2) {
-	if (move1.from.x == move2.from.x && move1.from.y == move2.from.y && move1.to.x == move2.to.x && move1.to.y == move2.to.y) {
-		return true;
-	}
-	return false;
-}
+
 
 
 
@@ -715,21 +651,34 @@ vector<CMove> getMoves(vector<vector<int>> board, int color) {
 }
 
 
-ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers = 0, int originalColor=0, int originalLayers=0) {
+ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, int originalColor, int originalLayers) {
 	vector<CMove> moves = getMoves(board, color);
 	ScoredMove move;
 	float highScore = -100;
 	ScoredMove bestMove;
 	for (int i = 0;i < size(moves);i++) {
 		if (layers == 0) {
-			bestMove = chooseMove(moves, board, color);
+			bestMove = chooseMove(moves, board, originalColor);
 			return bestMove;
 		}
 		else {
 			vector<vector<int>> newBoard = makeMove(board, moves[i]);
 			color *= -1;
+			if (areMovesEqual(moves[i],CMove( vec2(5,2), vec2(3,3) )) == true && layers==originalLayers) {
+				int a = 2;
+			}
 			move = layeredMoveChoice(newBoard, color, layers - 1, originalColor, originalLayers);
 			color *= -1;
+			if (layers % 2 != 0) {
+				if (move.score <= highScore) {
+					bestMove = move;
+					highScore = bestMove.score;
+					if (layers == originalLayers) {
+						bestMove = { moves[i], move.score };
+						debugMove(move.move);
+					}
+				}
+			}
 			if (move.score >= highScore) {
 				bestMove = move;
 				highScore = bestMove.score;
@@ -776,13 +725,7 @@ void writeBoardStateToFile(vector<vector<int>> board) {
 }
 
 
-bool runTestCase(testCase tCase) {
-	ScoredMove gotMove = layeredMoveChoice(tCase.board, tCase.color, 2, tCase.color, 2);
-	if (areMovesEqual(gotMove.move, tCase.expectedBestMove.move) == true && tCase.expectedBestMove.score == gotMove.score) {
-		return true;
-	}
-	return false;
-}
+
 
 
 
@@ -803,6 +746,16 @@ int main()
 
 	locale::global(locale("en_US.UTF-8"));
 	wcout.imbue(locale());
+	vector<vector<int>> board = makeBoard();
+	int* myVec = new int[64];
+	for (int i = 0; i < 8;i++) {
+		for (int j = 0;j < 8;j++) {
+			myVec[i*8+j] = board[i][j];
+		}
+	}
+	ScoredMove ThisRes = pickMove(myVec, 8, 8, -1, 2, -1, 2);
+	runTests();
+
 	printf("Hello World!\n");
 	vec2 v(3, 4);
 
@@ -810,34 +763,25 @@ int main()
 	CMove m2(vec2(3, 1), vec2(3, 3));
 
 	vector<CMove> moves;
-	vector<vector<int>> board = makeBoard();
 	ScoredMove movic = layeredMoveChoice(testBoard, 1, 2, 1, 2);
-	//Init test cases
 
-	testCase case1 = { board, ScoredMove {m,10.1592045}, 1 };
-	testCase case2 = { testBoard, ScoredMove {m2,22.9216003}, 1 };
-
-	// End of test cases
-
-
-
-	// run them
-	bool res1 = runTestCase(case1);
-	bool res2 = runTestCase(case2);
-
-
-	// end of run
 	moves = getMoves(board, 1);
 	vector<vector<int>> newBoard = makeMove(board, moves[0]);
 	//printf(to_string(scoreBoard(board, 1)).c_str());
 	ScoredMove bestMove = chooseMove(moves, board, 1);
 	ScoredMove otherMove = layeredMoveChoice(board, 1, 2, 1, 2);
 	int col = 1;
-	for (int i = 0;i < 10;i++) {
+	for (int i = 0;i < 20;i++) {
+		if (i == 2) {
+			int a = 2;
+		}
 		ScoredMove moveToMake = layeredMoveChoice(board, col, 2, col, 2);
 		board = makeMove(board, moveToMake.move);
+		if (i == 2) {
+			int a = 2;
+		}
 		col *= -1;
-		for (int i = 0;i < 8;i++) {
+		/*for (int i = 0;i < 8;i++) {
 			string row = "";
 			for (int j = 0; j < 8; j++) {
 				if (board[i][j] >= 0) {
@@ -851,8 +795,13 @@ int main()
 			OutputDebugStringA(row.c_str());
 			row = "";
 		}
+		*/
 		OutputDebugStringA("====================\n");
 		debugMakeBoard(board);
+		OutputDebugStringA("====================\n");
+		float ourJustPlayedScore = scoreBoard(board, col * -1);
+		OutputDebugStringA((to_string(ourJustPlayedScore)+"\n").c_str());
+		OutputDebugStringA("====================\n");
 	}
 	writeBoardStateToFile(board);
 	debugMakeBoard(board);
