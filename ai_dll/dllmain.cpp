@@ -8,7 +8,7 @@ using namespace std;
 
 
 extern "C" {
-	__declspec(dllexport) ScoredMove pickMove(int* flatArray, int rows, int cols, int color, int layers, int originalColor, int originalLayers) {
+	__declspec(dllexport) float pickMove(int* flatArray, int rows, int cols, int color, int layers, int originalColor, int originalLayers) {
 		std::vector<std::vector<int>> board(rows, std::vector<int>(cols));
 		for (int i = 0; i < rows; ++i) {
 			for (int j = 0; j < cols; ++j) {
@@ -664,14 +664,14 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, i
 		else {
 			vector<vector<int>> newBoard = makeMove(board, moves[i]);
 			color *= -1;
-			if (areMovesEqual(moves[i],CMove( vec2(5,2), vec2(3,3) )) == true && layers==originalLayers) {
+			if (areMovesEqual(moves[i],CMove( vec2(6,4), vec2(4,6) )) == true && layers==originalLayers) {
 				int a = 2;
 			}
 			move = layeredMoveChoice(newBoard, color, layers - 1, originalColor, originalLayers);
 			color *= -1;
 			if (layers % 2 != 0) {
 				if (move.score <= highScore) {
-					bestMove = move;
+					bestMove = { moves[i], move.score };
 					highScore = bestMove.score;
 					if (layers == originalLayers) {
 						bestMove = { moves[i], move.score };
@@ -691,6 +691,11 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, i
 	}
 	if (layers == originalLayers) {
 		int a = 2;
+	}
+	if (layers % 2 != 0) {
+		vector<vector<int>> newBoard = makeMove(board, bestMove.move);
+		vector<CMove> moves = getMoves(newBoard, originalColor);
+		bestMove = chooseMove(moves, newBoard, originalColor);
 	}
 	return bestMove;
 }
@@ -730,16 +735,6 @@ void writeBoardStateToFile(vector<vector<int>> board) {
 
 
 
-
-
-
-
-
-
-
-
-
-
 int main()
 {
 	SetConsoleOutputCP(CP_UTF8);
@@ -753,7 +748,7 @@ int main()
 			myVec[i*8+j] = board[i][j];
 		}
 	}
-	ScoredMove ThisRes = pickMove(myVec, 8, 8, -1, 2, -1, 2);
+	//ScoredMove ThisRes = pickMove(myVec, 8, 8, -1, 2, -1, 2);
 	runTests();
 
 	printf("Hello World!\n");
