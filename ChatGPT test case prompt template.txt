@@ -1,0 +1,38 @@
+I am making a chess bot. Here is how my chess game is structured
+
+The board:
+A 2D array of positive and negative ints
+
+0 - Empty space
+1 - pawn
+2 - rook
+3 - knight
+4 - bishop
+5 - queen
+6 - king
+
+White's pieces are positive values of the above numbers, whilst black's pieces are negative values of the 
+above values.
+
+My bot works by:
+
+Getting all moves for given color and putting them in a list of subMoves.
+
+For each subMove, it gets all subSubMoves for the oposite of given color and checks what which of those subSubMoves leads to the best outcome for the oposite color of the given color. My code has a scoreBoard function, and thats how it does this.
+
+To conclude, this is A recursive function, and using a 3 step depth ( subMove, subSubMoves, bestMoveForSubSubMoves) it picks a best move for the original color.
+
+Here is an example chess board.
+
+	vector<vector<int>> board = {
+	{2,3,4,5,6,4,3,2},
+	{1,1,1,1,1,1,1,1},
+	{0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0},
+	{-1,-1,-1,-1,-1,-1,-1,-1},
+	{-2,-3,-4,-5,-6,-4,-3,-2}
+	};
+
+With this information, I want you to make a few test cases that should have a maximum of 7 pieces on the board at any given time. Each test case should be a board formatted like the one i provided above, and the best move according to you.

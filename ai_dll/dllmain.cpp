@@ -15,7 +15,8 @@ extern "C" {
 				board[i][j] = flatArray[i * cols + j];
 			}
 		}
-		return layeredMoveChoice(board,color,layers,originalColor,originalLayers).score;
+		return layeredMoveChoice(board,color,layers,originalColor,originalLayers, { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
+			{ 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 }).score;
 	}
 }
 
@@ -157,7 +158,7 @@ vector<float> yPosWeights = { 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 };
 
 
 
-float scoreBoard(vector<vector<int>> board, int ourColor) {
+float scoreBoard(vector<vector<int>> board, int ourColor, vector<float> yPosWeights,vector<float> xPosWeights) {
 	float ourScore = 0;
 	float enemyScore = 0;
 
@@ -175,6 +176,7 @@ float scoreBoard(vector<vector<int>> board, int ourColor) {
 					ourScore += pieceScore;
 				else
 					enemyScore += pieceScore;
+
 			}
 			if (color == -1) {
 				float pieceScore = pieceValue(board[i][j]);
@@ -308,6 +310,62 @@ vector<CMove> rookMoves(int y, int x, vector<vector<int>> board) {
 	return moves;
 }
 
+vector<CMove> rookMoves2(int y, int x, vector<vector<int>> board) {
+	vector<CMove> moves;
+	int color = board[y][x] / abs(board[y][x]);
+	vector<vec2> directions{ {-1,0},{0,-1}, {1,0},{0,1} };
+	for (int i = 0; i < 4;i++) {
+		vec2 direction = directions[i];
+		for (int j = 1; j < 9;j++) {
+			int newX = x + direction.x * j;
+			int newY = y + direction.y * j;
+
+			if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+				if (board[newY][newX] == 0) {
+					CMove move(vec2(x, y), vec2(newX, newY));
+					moves.push_back(move);
+
+				}
+				else {
+					if (color == 1) {
+						if (board[newY][newX] < 0) {
+							CMove move(vec2(x, y), vec2(newX, newY));
+							moves.push_back(move);
+							newX = newX+direction.x;
+							newY = newY+direction.y;
+							if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+								CMove move(vec2(x, y), vec2(newX, newY));
+								moves.push_back(move);
+							}
+						}
+						break;
+					}
+
+					if (color == -1) {
+						if (board[newY][newX] > 0) {
+							CMove move(vec2(x, y), vec2(newX, newY));
+							moves.push_back(move);
+							newX = newX + direction.x;
+							newY = newY + direction.y;
+							if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+								CMove move(vec2(x, y), vec2(newX, newY));
+								moves.push_back(move);
+							}
+						}
+						break;
+					}
+
+				}
+			}
+			else {
+				break;
+			}
+
+		}
+	}
+	return moves;
+}
+
 vector<CMove> knightMoves(int y, int x, vector<vector<int>> board) {
 	vector<CMove> moves;
 	vector<vec2> directions = { {-2,-1}, {-1,-2}, {1,-2}, {2,-1}, {2,1}, {1,2}, {-1,2}, {-2,1} };
@@ -326,6 +384,7 @@ vector<CMove> knightMoves(int y, int x, vector<vector<int>> board) {
 						CMove move(vec2(x, y), vec2(newX, newY));
 						moves.push_back(move);
 					}
+
 				}
 
 				if (color == -1) {
@@ -521,15 +580,133 @@ vector<vec2> controlledSpots(int controller, vector<vector<int>> board) {
 	return coordinates;
 }
 
+vector<vec2> controlledSpotsForKing(int controller, vector<vector<int>> board) {
+	vector<vec2> coordinates;
+	for (int i = 0;i < size(board);i++) {
+		for (int j = 0; j < size(board); j++) {
+			if (controller == 1) {
+				if (board[i][j] > 0) {
+					if (abs(board[i][j]) == 1) { // Pawn
+						vector<CMove> subMoves;
+						subMoves = pawnMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+						}
+					}
+					if (abs(board[i][j]) == 2) { // Rook
+						vector<CMove> subMoves;
+						subMoves = rookMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+						}
+					}
 
-ScoredMove chooseMove(vector<CMove> moves, vector<vector<int>> board, int forWho) {
+					if (abs(board[i][j]) == 3) { // Knight
+						vector<CMove> subMoves;
+						subMoves = knightMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+						}
+					}
+
+					if (abs(board[i][j]) == 4) { // Bishop
+						vector<CMove> subMoves;
+						subMoves = bishopMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+						}
+					}
+					if (abs(board[i][j]) == 5) {
+						vector<CMove> subMoves;
+						subMoves = queenMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+						}
+					}
+					if (abs(board[i][j]) == 6) {
+						vector<vec2> subMoves = { {j - 1,i - 1},{j,i - 1},{j + 1,i - 1},{j + 1,i},{j + 1,i + 1},{j,i + 1},{j - 1,i + 1},{j - 1,i} };
+						for (int k = 0; k < size(subMoves);k++) {
+							coordinates.push_back(subMoves[k]);
+						}
+					}
+				}
+			}
+			if (controller == -1) {
+				if (board[i][j] == 2)
+					int a = 5;
+				if (board[i][j] < 0) {
+					if (abs(board[i][j]) == 1) { // Pawn
+						vector<CMove> subMoves;
+						subMoves = pawnMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+
+						}
+					}
+					if (abs(board[i][j]) == 2) { // Rook
+						vector<CMove> subMoves;
+						subMoves = rookMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+
+						}
+					}
+
+					if (abs(board[i][j]) == 3) { // Knight
+						vector<CMove> subMoves;
+						subMoves = knightMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+
+						}
+					}
+
+					if (abs(board[i][j]) == 4) { // Bishop
+						vector<CMove> subMoves;
+						subMoves = bishopMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+						}
+					}
+					if (abs(board[i][j]) == 5) {
+						vector<CMove> subMoves;
+						subMoves = queenMoves(i, j, board);
+						for (int k = 0; k < size(subMoves);k++) {
+							vec2 coords = subMoves[k].to;
+							coordinates.push_back(coords);
+						}
+					}
+					if (abs(board[i][j]) == 6) {
+						vector<vec2> subMoves = { {j - 1,i - 1},{j,i - 1},{j + 1,i - 1},{j + 1,i},{j + 1,i + 1},{j,i + 1},{j - 1,i + 1},{j - 1,i} };
+						for (int k = 0; k < size(subMoves);k++) {
+							coordinates.push_back(subMoves[k]);
+						}
+					}
+
+				}
+			}
+		}
+	}
+	return coordinates;
+}
+
+ScoredMove chooseMove(vector<CMove> moves, vector<vector<int>> board, int forWho, vector<float> xPosWeights, vector<float> yPosWeights) {
 	float highestScore = 0;
 	CMove bestMove = { {0,0}, {0,0} };
 	for (int i = 0; i < size(moves);i++) {
 		if (i == 0) {
 			vector<vector<int>> newBoard;
 			newBoard = makeMove(board, moves[i]);
-			highestScore = scoreBoard(newBoard, forWho);
+			highestScore = scoreBoard(newBoard, forWho, xPosWeights, yPosWeights);
 			bestMove.from.x = moves[i].from.x;
 			bestMove.from.y = moves[i].from.y;
 			bestMove.to.x = moves[i].to.x;
@@ -541,7 +718,8 @@ ScoredMove chooseMove(vector<CMove> moves, vector<vector<int>> board, int forWho
 		vector<vector<int>> newBoard;
 		newBoard = makeMove(board, moves[i]);
 		//printf("%d\n", size(newBoard));
-		float curScore = scoreBoard(newBoard, forWho);
+		float curScore = scoreBoard(newBoard, forWho,{ 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
+			{ 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 });
 		if (curScore >= highestScore){
 			highestScore = curScore;
 			bestMove = moves[i];
@@ -552,6 +730,18 @@ ScoredMove chooseMove(vector<CMove> moves, vector<vector<int>> board, int forWho
 
 }
 
+bool isKingInCheck(vector<vector<int>> board, int color, int x, int y) {
+	vector<vec2> controlSpots = controlledSpots(color*-1, board);
+	vec2 kingPos = { x,y };
+
+	for (int i = 0; i < size(controlSpots);i++) {
+		if (kingPos.x == controlSpots[i].x and kingPos.y == controlSpots[i].y) {
+			return true;
+		}
+	}
+	return false;
+
+}
 
 vector<CMove> kingMoves(int y, int x, vector<vector<int>>board) {
 	vector<CMove> moves;
@@ -585,6 +775,91 @@ vector<CMove> kingMoves(int y, int x, vector<vector<int>>board) {
 }
 
 
+
+
+bool isCheckmate(vector<vector<int>> board, int color) {
+	int x;
+	int y;
+	int found = 0;
+	for (int i = 0; i < size(board); i++) {
+		for (int j = 0;j < size(board);j++) {
+			if (board[i][j] == 6 * color) {
+				y = i;
+				x = j;
+				found = 1;
+			}
+		}
+	}
+
+	if (found == 0)
+		return true;
+
+	if (isKingInCheck(board, color, x, y) == true) {
+		vector<CMove> moves = getMoves(board, color);
+		if (size(moves) == 0)
+			return true;
+	}
+	return false;
+}
+
+
+
+
+void writeBoardStateToFile(vector<vector<int>> board) {
+	ofstream myfile("target.txt");
+
+	// Check if the file is open
+	if (myfile.is_open()) {
+		for (int i = 0;i < 8;i++) {
+			string thisLine = "";
+			for (int j = 0;j < 8;j++) {
+				if (j == 7) {
+					thisLine += to_string(board[i][j]);
+				}
+				else {
+					thisLine += to_string(board[i][j])+";";
+				}
+			}
+			thisLine += "\n";
+			myfile << thisLine;
+			printf(thisLine.c_str());
+		}
+		
+		// Close the file
+		myfile.close();
+	}
+	else {
+		std::cout << "Unable to open file";
+	}
+}
+
+
+
+vector<CMove> checkMoves(vector<CMove> moves, vector<vector<int>> board, int color) {
+	int x;
+	int y;
+	int found = 0;
+	for (int i = 0; i < size(board); i++) {
+		for (int j = 0;j < size(board);j++) {
+			if (board[i][j] == 6 * color) {
+				y = i;
+				x = j;
+				found = 1;
+			}
+		}
+	}
+
+	if (found == 0)
+		return moves;
+
+	vector<CMove> realMoves;
+	for (int i = 0;i < size(moves);i++) {
+		vector<vector<int>> newBoard = makeMove(board, moves[i]);
+		if (isKingInCheck(newBoard, color, x, y) == false)
+			realMoves.push_back(moves[i]);
+	}
+	return realMoves;
+}
 
 vector<CMove> getMoves(vector<vector<int>> board, int color) {
 	vector<CMove> moves;
@@ -647,44 +922,51 @@ vector<CMove> getMoves(vector<vector<int>> board, int color) {
 
 		}
 	}
+
+	moves = checkMoves(moves, board, color);
+
 	return moves;
 }
 
-
-ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, int originalColor, int originalLayers) {
+ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, int originalColor, int originalLayers, vector<float> xPosWeights = { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 }, vector<float> yPosWeights = { 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 }) {
 	vector<CMove> moves = getMoves(board, color);
 	ScoredMove move;
 	float highScore = -100;
 	ScoredMove bestMove;
+	if (layers % 2 != 0) {
+		highScore = 100;
+	}
 	for (int i = 0;i < size(moves);i++) {
 		if (layers == 0) {
-			bestMove = chooseMove(moves, board, originalColor);
+			bestMove = chooseMove(moves, board, originalColor, xPosWeights, yPosWeights);
 			return bestMove;
 		}
 		else {
+			if (layers == originalLayers)
+				int a = 3;
 			vector<vector<int>> newBoard = makeMove(board, moves[i]);
 			color *= -1;
-			if (areMovesEqual(moves[i],CMove( vec2(6,4), vec2(4,6) )) == true && layers==originalLayers) {
+			if (areMovesEqual(moves[i], CMove(vec2(5, 2), vec2(4, 4))) == true && layers == originalLayers) {
 				int a = 2;
 			}
-			move = layeredMoveChoice(newBoard, color, layers - 1, originalColor, originalLayers);
+			move = layeredMoveChoice(newBoard, color, layers - 1, originalColor, originalLayers, xPosWeights, yPosWeights);
 			color *= -1;
 			if (layers % 2 != 0) {
 				if (move.score <= highScore) {
 					bestMove = { moves[i], move.score };
-					highScore = bestMove.score;
+					highScore = move.score;
 					if (layers == originalLayers) {
 						bestMove = { moves[i], move.score };
-						debugMove(move.move);
+						//debugMove(move.move);
 					}
 				}
 			}
-			if (move.score >= highScore) {
+			else if (move.score >= highScore) {
 				bestMove = move;
 				highScore = bestMove.score;
 				if (layers == originalLayers) {
 					bestMove = { moves[i], move.score };
-					debugMove(move.move);
+					//debugMove(move.move);
 				}
 			}
 		}
@@ -695,43 +977,14 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, i
 	if (layers % 2 != 0) {
 		vector<vector<int>> newBoard = makeMove(board, bestMove.move);
 		vector<CMove> moves = getMoves(newBoard, originalColor);
-		bestMove = chooseMove(moves, newBoard, originalColor);
+		bestMove = chooseMove(moves, newBoard, originalColor, { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 }, { 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 });
+		if (size(moves) == 0) {
+			bestMove.score = -100;
+			return bestMove;
+		}
 	}
 	return bestMove;
 }
-
-
-void writeBoardStateToFile(vector<vector<int>> board) {
-	ofstream myfile("target.txt");
-
-	// Check if the file is open
-	if (myfile.is_open()) {
-		for (int i = 0;i < 8;i++) {
-			string thisLine = "";
-			for (int j = 0;j < 8;j++) {
-				if (j == 7) {
-					thisLine += to_string(board[i][j]);
-				}
-				else {
-					thisLine += to_string(board[i][j])+";";
-				}
-			}
-			thisLine += "\n";
-			myfile << thisLine;
-			printf(thisLine.c_str());
-		}
-		
-		// Close the file
-		myfile.close();
-	}
-	else {
-		std::cout << "Unable to open file";
-	}
-}
-
-
-
-
 
 
 
@@ -763,7 +1016,8 @@ int main()
 	moves = getMoves(board, 1);
 	vector<vector<int>> newBoard = makeMove(board, moves[0]);
 	//printf(to_string(scoreBoard(board, 1)).c_str());
-	ScoredMove bestMove = chooseMove(moves, board, 1);
+	ScoredMove bestMove = chooseMove(moves, board, 1, { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
+		{ 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 });
 	ScoredMove otherMove = layeredMoveChoice(board, 1, 2, 1, 2);
 	int col = 1;
 	for (int i = 0;i < 20;i++) {
@@ -794,7 +1048,8 @@ int main()
 		OutputDebugStringA("====================\n");
 		debugMakeBoard(board);
 		OutputDebugStringA("====================\n");
-		float ourJustPlayedScore = scoreBoard(board, col * -1);
+		float ourJustPlayedScore = scoreBoard(board, col * -1,{ 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
+			{ 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 });
 		OutputDebugStringA((to_string(ourJustPlayedScore)+"\n").c_str());
 		OutputDebugStringA("====================\n");
 	}
