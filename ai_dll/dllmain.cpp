@@ -517,7 +517,7 @@ vector<CMove> kingMoves(int y, int x, vector<vector<int>>board) {
 			}
 		}
 	}
-	printf("Debug %d\n",size(moves));
+	//printf("Debug %d\n",size(moves));
 	return moves;
 }
 
@@ -929,7 +929,7 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, i
 		else {
 			if (layers == originalLayers)
 				int a = 3;
-			if (areMovesEqual(moves[i], CMove(vec2(2, 4), vec2(3, 3))) == true && layers == originalLayers) {
+			if (areMovesEqual(moves[i], CMove(vec2(5, 3), vec2(4, 1))) == true && layers == originalLayers) {
 				int a = 2;
 			}
 			vector<vector<int>> newBoard = makeMove(board, moves[i]);

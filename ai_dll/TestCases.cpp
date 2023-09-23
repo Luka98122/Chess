@@ -125,7 +125,18 @@ bool runTests() {
 
 	};
 
+	vector<vector<int>> testBoard6 = {
+		//0 1  2  3  4  5  6  7
+		{0 ,0 ,-6,0 ,0 ,0 ,0 ,0 }, // 0
+		{2 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 1
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 2
+		{0 ,0 ,0 ,0 ,0 ,3 ,0 ,0 }, // 3
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 4
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 5
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 6
+		{0 ,2 ,0 ,2 ,0 ,0 ,0 ,0 }  // 7
 
+	};
 
 
 
@@ -174,6 +185,7 @@ bool runTests() {
 	CMove m3(vec2(4, 3), vec2(4, 2));
 	CMove m4(vec2(7,6), vec2(4, 6));
 	CMove m5(vec2(2, 4), vec2(3, 3));
+	CMove m6(vec2(5, 3), vec2(4, 1));
 
 
 	testCase case1 = { testBoard1, ScoredMove {m,0.0}, 1, "Knight fork choice",{ 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
@@ -188,8 +200,12 @@ bool runTests() {
 	testCase case5 = { testBoard5, ScoredMove {m5, 0.0}, 1, "Checkmate for color 1 via bishop", { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
 { 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 } };
 
+	testCase case6 = { testBoard6, ScoredMove {m6, 0.0}, 1, "Checkmate for color 1 via knight", { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
+{ 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 } };
+
+
 	//debugTestCaseWithPrintf(case1, ScoredMove{ m,10.1592045 });
-	vector<testCase> testCases = {case1,case2,case3,case4,case5};
+	vector<testCase> testCases = {case1,case2,case3,case4,case5,case6};
 	// End of test cases
 
 
