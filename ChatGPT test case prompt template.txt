@@ -22,7 +22,7 @@ For each subMove, it gets all subSubMoves for the oposite of given color and che
 
 To conclude, this is A recursive function, and using a 3 step depth ( subMove, subSubMoves, bestMoveForSubSubMoves) it picks a best move for the original color.
 
-Here is an example chess board.
+Here is an example chess board. Take care to formate your test cases like this board.
 
 	vector<vector<int>> board = {
 	{2,3,4,5,6,4,3,2},
@@ -36,3 +36,6 @@ Here is an example chess board.
 	};
 
 With this information, I want you to make a few test cases that should have a maximum of 7 pieces on the board at any given time. Each test case should be a board formatted like the one i provided above, and the best move according to you.
+
+When writing test cases, x goes before y.
+Also, add an explanation for every Test Case. It should be a maximum of 3 sentences.

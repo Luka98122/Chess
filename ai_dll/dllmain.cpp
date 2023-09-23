@@ -153,55 +153,11 @@ vector<float> xPosWeights = { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 };
 vector<float> yPosWeights = { 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 };
 
 
-
-
-
-
-
-float scoreBoard(vector<vector<int>> board, int ourColor, vector<float> yPosWeights,vector<float> xPosWeights) {
-	float ourScore = 0;
-	float enemyScore = 0;
-
-	for (int i = 0; i < size(board); i++) {
-		for (int j = 0; j < size(board); j++) {
-			if (board[i][j] == 0)
-				continue;
-			int color = board[i][j] / abs(board[i][j]);
-			if (color == 1) {
-				float pieceScore = pieceValue(board[i][j]);
-				pieceScore *= yPosWeights[i];
-				pieceScore *= xPosWeights[j];
-
-				if (color == ourColor)
-					ourScore += pieceScore;
-				else
-					enemyScore += pieceScore;
-
-			}
-			if (color == -1) {
-				float pieceScore = pieceValue(board[i][j]);
-				pieceScore *= yPosWeights[yPosWeights.size() - (i+1)];
-				pieceScore *= xPosWeights[j];
-
-				if (color == ourColor)
-					ourScore += pieceScore;
-				else
-					enemyScore += pieceScore;
-			}
-
-		}
-	}
-	return ourScore - enemyScore;
-}
-
-
-
-
-
+// No dependency helpers
 vector<vector<int>> makeMove(vector<vector<int>> board, CMove move) {
 	vector<vector<int>> newBoard;
 
-	for (int i = 0;i<size(board);i++) {
+	for (int i = 0;i < size(board);i++) {
 		newBoard.push_back(board[i]);
 	}
 
@@ -211,7 +167,14 @@ vector<vector<int>> makeMove(vector<vector<int>> board, CMove move) {
 }
 
 
-vector<CMove> pawnMoves(int y,int x, vector<vector<int>> board) {
+// End of no denependy helpers
+
+
+
+
+//Basic Piece Moves
+
+vector<CMove> pawnMoves(int y, int x, vector<vector<int>> board) {
 	int dy = board[y][x];
 	vector<CMove> moves;
 	if (board[y + dy][x] == 0) {
@@ -232,7 +195,7 @@ vector<CMove> pawnMoves(int y,int x, vector<vector<int>> board) {
 			}
 		}
 	}
-	
+
 	if (x + 1 >= 0 && x + 1 < 8 && y + dy > 0 && y + dy < 8) {
 		if (board[y + dy][x + 1] != 0) {
 			if (dy == -1 && board[y + dy][x + 1] < 0) {
@@ -268,50 +231,6 @@ vector<CMove> pawnMoves(int y,int x, vector<vector<int>> board) {
 
 vector<CMove> rookMoves(int y, int x, vector<vector<int>> board) {
 	vector<CMove> moves;
-	int color = board[y][x]/abs(board[y][x]);
-	vector<vec2> directions{ {-1,0},{0,-1}, {1,0},{0,1} };
-	for (int i = 0; i<4;i++) {
-		vec2 direction = directions[i];
-		for (int j = 1; j < 9;j++) {
-			int newX = x+direction.x*j;
-			int newY = y+direction.y*j;
-
-			if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
-				if (board[newY][newX] == 0) {
-					CMove move(vec2(x, y), vec2(newX, newY));
-					moves.push_back(move);
-
-				}
-				else {
-					if (color == 1) {
-						if (board[newY][newX] < 0) {
-							CMove move(vec2(x, y), vec2(newX, newY));
-							moves.push_back(move);
-						}
-						break;
-					}
-					
-					if (color == -1) {
-						if (board[newY][newX] > 0) {
-							CMove move(vec2(x, y), vec2(newX, newY));
-							moves.push_back(move);
-						}
-						break;
-					}
-
-				}
-			}
-			else {
-				break;
-			}
-
-		}
-	}
-	return moves;
-}
-
-vector<CMove> rookMoves2(int y, int x, vector<vector<int>> board) {
-	vector<CMove> moves;
 	int color = board[y][x] / abs(board[y][x]);
 	vector<vec2> directions{ {-1,0},{0,-1}, {1,0},{0,1} };
 	for (int i = 0; i < 4;i++) {
@@ -331,12 +250,6 @@ vector<CMove> rookMoves2(int y, int x, vector<vector<int>> board) {
 						if (board[newY][newX] < 0) {
 							CMove move(vec2(x, y), vec2(newX, newY));
 							moves.push_back(move);
-							newX = newX+direction.x;
-							newY = newY+direction.y;
-							if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
-								CMove move(vec2(x, y), vec2(newX, newY));
-								moves.push_back(move);
-							}
 						}
 						break;
 					}
@@ -345,12 +258,6 @@ vector<CMove> rookMoves2(int y, int x, vector<vector<int>> board) {
 						if (board[newY][newX] > 0) {
 							CMove move(vec2(x, y), vec2(newX, newY));
 							moves.push_back(move);
-							newX = newX + direction.x;
-							newY = newY + direction.y;
-							if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
-								CMove move(vec2(x, y), vec2(newX, newY));
-								moves.push_back(move);
-							}
 						}
 						break;
 					}
@@ -399,13 +306,6 @@ vector<CMove> knightMoves(int y, int x, vector<vector<int>> board) {
 	}
 	return moves;
 }
-
-
-
-
-
-
-
 
 vector<CMove> bishopMoves(int y, int x, vector<vector<int>> board) {
 	vector<CMove> moves;
@@ -461,6 +361,9 @@ vector<CMove> queenMoves(int y, int x, vector<vector<int>> board) {
 
 }
 
+//Basic Piece Moves End.
+
+//King moves
 vector<vec2> controlledSpots(int controller, vector<vector<int>> board) {
 	vector<vec2> coordinates;
 	for (int i = 0;i < size(board);i++) {
@@ -492,7 +395,7 @@ vector<vec2> controlledSpots(int controller, vector<vector<int>> board) {
 							coordinates.push_back(coords);
 						}
 					}
-					
+
 					if (abs(board[i][j]) == 4) { // Bishop
 						vector<CMove> subMoves;
 						subMoves = bishopMoves(i, j, board);
@@ -578,6 +481,248 @@ vector<vec2> controlledSpots(int controller, vector<vector<int>> board) {
 		}
 	}
 	return coordinates;
+}
+
+vector<CMove> kingMoves(int y, int x, vector<vector<int>>board) {
+	vector<CMove> moves;
+	vector<vec2> directions = { {-1,-1}, {0,-1}, {1,-1}, {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0} };
+	int color = board[y][x] / abs(board[y][x]);
+	if (color == -1)
+		color = 1;
+	else
+		color = -1;
+	if (y == 0 && x == 0 && board[0][7] == 2) {
+		int b = 3;
+	}
+	vector<vec2> controlSpots = controlledSpots(color, board);
+	int lever = 0;
+	for (int i = 0;i < 8;i++) {
+		lever = 0;
+		int newX = x + directions[i].x;
+		int newY = y + directions[i].y;
+
+
+
+		if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
+			vec2 newPos = { newX,newY };
+			for (int j = 0; j < size(controlSpots);j++) {
+				if (controlSpots[j].x == newX && controlSpots[j].y == newY) {
+					lever = 1;
+					break;
+				}
+			}
+			if (lever == 0) {
+				CMove move = { {x,y}, {newX,newY} };
+				moves.push_back(move);
+			}
+		}
+	}
+	printf("Debug %d\n",size(moves));
+	return moves;
+}
+
+bool isKingInCheck(vector<vector<int>> board, int color, int a, int b) {
+	vector<vec2> controlSpots = controlledSpots(color * -1, board);
+	int x;
+	int y;
+	int found = 0;
+	for (int i = 0; i < size(board); i++) {
+		for (int j = 0;j < size(board);j++) {
+			if (board[i][j] == 6 * color) {
+				y = i;
+				x = j;
+				found = 1;
+			}
+		}
+	}
+	vec2 kingPos = { x,y };
+
+	for (int i = 0; i < size(controlSpots);i++) {
+		if (kingPos.x == controlSpots[i].x and kingPos.y == controlSpots[i].y) {
+			return true;
+		}
+	}
+	return false;
+
+}
+
+
+
+//	GET MOVES
+vector<CMove> checkMoves(vector<CMove> moves, vector<vector<int>> board, int color) {
+	int x;
+	int y;
+	int found = 0;
+	for (int i = 0; i < size(board); i++) {
+		for (int j = 0;j < size(board);j++) {
+			if (board[i][j] == 6 * color) {
+				y = i;
+				x = j;
+				found = 1;
+			}
+		}
+	}
+
+	if (found == 0)
+		return moves;
+
+	vector<CMove> realMoves;
+	for (int i = 0;i < size(moves);i++) {
+		vector<vector<int>> newBoard = makeMove(board, moves[i]);
+		if (isKingInCheck(newBoard, color, x, y) == false)
+			realMoves.push_back(moves[i]);
+	}
+	return realMoves;
+}
+
+vector<CMove> getMoves(vector<vector<int>> board, int color) {
+	vector<CMove> moves;
+	for (int i = 0;i < size(board);i++) {
+		//printf("Hi\n");
+		for (int j = 0; j < size(board); j++) {
+			if ((color == -1 && board[i][j] < 0) || (color == 1 && board[i][j] > 0)) {
+				if (abs(board[i][j]) == 1) { // Pawn
+					vector<CMove> subMoves;
+					subMoves = pawnMoves(i, j, board);
+					for (int i = 0; i < size(subMoves);i++) {
+						moves.push_back(subMoves[i]);
+					}
+				}
+				if (abs(board[i][j]) == 2) { // Rook
+					vector<CMove> subMoves;
+					subMoves = rookMoves(i, j, board);
+					for (int k = 0; k < size(subMoves);k++) {
+						CMove curMove = subMoves[k];
+						moves.push_back(curMove);
+					}
+				}
+
+				if (abs(board[i][j]) == 3) { // Knight
+					vector<CMove> subMoves;
+					subMoves = knightMoves(i, j, board);
+					for (int k = 0; k < size(subMoves);k++) {
+						CMove curMove = subMoves[k];
+						moves.push_back(curMove);
+					}
+				}
+
+				if (abs(board[i][j]) == 4) { // Bishop
+					vector<CMove> subMoves;
+					subMoves = bishopMoves(i, j, board);
+					for (int k = 0; k < size(subMoves);k++) {
+						CMove curMove = subMoves[k];
+						moves.push_back(curMove);
+					}
+				}
+
+				if (abs(board[i][j]) == 5) {
+					vector<CMove> subMoves;
+					subMoves = queenMoves(i, j, board);
+					for (int k = 0; k < size(subMoves);k++) {
+						CMove curMove = subMoves[k];
+						moves.push_back(curMove);
+					}
+				}
+
+				if (abs(board[i][j]) == 6) {
+					vector<CMove> subMoves;
+					subMoves = kingMoves(i, j, board);
+					for (int k = 0; k < size(subMoves);k++) {
+						CMove curMove = subMoves[k];
+						moves.push_back(curMove);
+					}
+				}
+			}
+
+		}
+	}
+
+	moves = checkMoves(moves, board, color);
+
+	return moves;
+}
+
+//	GET MOVES
+
+
+
+
+
+bool isCheckmate(vector<vector<int>> board, int color) {
+	int x;
+	int y;
+	int found = 0;
+	for (int i = 0; i < size(board); i++) {
+		for (int j = 0;j < size(board);j++) {
+			if (board[i][j] == 6 * color) {
+				y = i;
+				x = j;
+				found = 1;
+			}
+		}
+	}
+
+	if (found == 0)
+		return false;
+
+	if (isKingInCheck(board, color, x, y) == true) {
+		vector<CMove> moves = getMoves(board, color);
+		if (size(moves) == 0)
+			return true;
+	}
+	return false;
+}
+
+
+
+float scoreBoard(vector<vector<int>> board, int ourColor, vector<float> yPosWeights,vector<float> xPosWeights) {
+	float ourScore = 0;
+	float enemyScore = 0;
+
+	for (int i = 0; i < size(board); i++) {
+		for (int j = 0; j < size(board); j++) {
+			if (board[i][j] == 0)
+				continue;
+			int color = board[i][j] / abs(board[i][j]);
+			if (color == 1) {
+				float pieceScore = pieceValue(board[i][j]);
+				pieceScore *= yPosWeights[i];
+				pieceScore *= xPosWeights[j];
+
+				if (color == ourColor)
+					ourScore += pieceScore;
+				else
+					enemyScore += pieceScore;
+				
+
+
+
+			}
+			if (color == -1) {
+				float pieceScore = pieceValue(board[i][j]);
+				pieceScore *= yPosWeights[yPosWeights.size() - (i+1)];
+				pieceScore *= xPosWeights[j];
+
+				if (color == ourColor)
+					ourScore += pieceScore;
+				else
+					enemyScore += pieceScore;
+			}
+
+		}
+	}
+
+	if (isCheckmate(board, ourColor * -1)) {
+		ourScore = ourScore + 1000;
+	}
+
+	if (isCheckmate(board, ourColor)) {
+		enemyScore = enemyScore + 1000;
+	}
+
+
+
+	return ourScore - enemyScore;
 }
 
 vector<vec2> controlledSpotsForKing(int controller, vector<vector<int>> board) {
@@ -703,6 +848,10 @@ ScoredMove chooseMove(vector<CMove> moves, vector<vector<int>> board, int forWho
 	float highestScore = 0;
 	CMove bestMove = { {0,0}, {0,0} };
 	for (int i = 0; i < size(moves);i++) {
+		if (areMovesEqual(moves[i], CMove{ {2,4}, {3,3} })) {
+			int b = 3;		
+		}
+	
 		if (i == 0) {
 			vector<vector<int>> newBoard;
 			newBoard = makeMove(board, moves[i]);
@@ -720,6 +869,9 @@ ScoredMove chooseMove(vector<CMove> moves, vector<vector<int>> board, int forWho
 		//printf("%d\n", size(newBoard));
 		float curScore = scoreBoard(newBoard, forWho,{ 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
 			{ 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 });
+		if (curScore > 1000) {
+			int c = 3;
+		}
 		if (curScore >= highestScore){
 			highestScore = curScore;
 			bestMove = moves[i];
@@ -729,79 +881,6 @@ ScoredMove chooseMove(vector<CMove> moves, vector<vector<int>> board, int forWho
 	return scoredMove;
 
 }
-
-bool isKingInCheck(vector<vector<int>> board, int color, int x, int y) {
-	vector<vec2> controlSpots = controlledSpots(color*-1, board);
-	vec2 kingPos = { x,y };
-
-	for (int i = 0; i < size(controlSpots);i++) {
-		if (kingPos.x == controlSpots[i].x and kingPos.y == controlSpots[i].y) {
-			return true;
-		}
-	}
-	return false;
-
-}
-
-vector<CMove> kingMoves(int y, int x, vector<vector<int>>board) {
-	vector<CMove> moves;
-	vector<vec2> directions = { {-1,-1}, {0,-1}, {1,-1}, {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0} };
-	int color = board[y][x] / abs(board[y][x]);
-	if (color == -1)
-		color = 1;
-	else
-		color = -1;
-	vector<vec2> controlSpots = controlledSpots(color, board);
-	int lever = 0;
-	for (int i = 0;i < 8;i++) {
-		lever = 0;
-		int newX = x + directions[i].x;
-		int newY = y + directions[i].y;
-		if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
-			vec2 newPos = { newX,newY };
-			for (int j = 0; j < size(controlSpots);j++) {
-				if (controlSpots[j].x == newX && controlSpots[j].y == newY) {
-					lever = 1;
-					break;
-				}
-			}
-			if (lever == 0) {
-				CMove move = { {x,y}, {newX,newY} };
-				moves.push_back(move);
-			}
-		}
-	}
-	return moves;
-}
-
-
-
-
-bool isCheckmate(vector<vector<int>> board, int color) {
-	int x;
-	int y;
-	int found = 0;
-	for (int i = 0; i < size(board); i++) {
-		for (int j = 0;j < size(board);j++) {
-			if (board[i][j] == 6 * color) {
-				y = i;
-				x = j;
-				found = 1;
-			}
-		}
-	}
-
-	if (found == 0)
-		return true;
-
-	if (isKingInCheck(board, color, x, y) == true) {
-		vector<CMove> moves = getMoves(board, color);
-		if (size(moves) == 0)
-			return true;
-	}
-	return false;
-}
-
 
 
 
@@ -834,100 +913,6 @@ void writeBoardStateToFile(vector<vector<int>> board) {
 }
 
 
-
-vector<CMove> checkMoves(vector<CMove> moves, vector<vector<int>> board, int color) {
-	int x;
-	int y;
-	int found = 0;
-	for (int i = 0; i < size(board); i++) {
-		for (int j = 0;j < size(board);j++) {
-			if (board[i][j] == 6 * color) {
-				y = i;
-				x = j;
-				found = 1;
-			}
-		}
-	}
-
-	if (found == 0)
-		return moves;
-
-	vector<CMove> realMoves;
-	for (int i = 0;i < size(moves);i++) {
-		vector<vector<int>> newBoard = makeMove(board, moves[i]);
-		if (isKingInCheck(newBoard, color, x, y) == false)
-			realMoves.push_back(moves[i]);
-	}
-	return realMoves;
-}
-
-vector<CMove> getMoves(vector<vector<int>> board, int color) {
-	vector<CMove> moves;
-	for (int i = 0;i < size(board);i++) {
-		//printf("Hi\n");
-		for (int j = 0; j < size(board); j++) { 
-			if ((color == -1 && board[i][j] < 0 ) || (color == 1 && board[i][j] > 0)) {
-				if (abs(board[i][j]) == 1) { // Pawn
-					vector<CMove> subMoves;
-					subMoves = pawnMoves(i, j, board);
-					for (int i = 0; i < size(subMoves);i++) {
-						moves.push_back(subMoves[i]);
-					}
-				}
-				if (abs(board[i][j]) == 2) { // Rook
-					vector<CMove> subMoves;
-					subMoves = rookMoves(i, j, board);
-					for (int k = 0; k < size(subMoves);k++) {
-						CMove curMove = subMoves[k];
-						moves.push_back(curMove);
-					}
-				}
-
-				if (abs(board[i][j]) == 3) { // Knight
-					vector<CMove> subMoves;
-					subMoves = knightMoves(i, j, board);
-					for (int k = 0; k < size(subMoves);k++) {
-						CMove curMove = subMoves[k];
-						moves.push_back(curMove);
-					}
-				}
-
-				if (abs(board[i][j]) == 4) { // Bishop
-					vector<CMove> subMoves;
-					subMoves = bishopMoves(i, j, board);
-					for (int k = 0; k < size(subMoves);k++) {
-						CMove curMove = subMoves[k];
-						moves.push_back(curMove);
-					}
-				}
-
-				if (abs(board[i][j]) == 5) {
-					vector<CMove> subMoves;
-					subMoves = queenMoves(i, j, board);
-					for (int k = 0; k < size(subMoves);k++) {
-						CMove curMove = subMoves[k];
-						moves.push_back(curMove);
-					}
-				}
-
-				if (abs(board[i][j]) == 6) {
-					vector<CMove> subMoves;
-					subMoves = kingMoves(i, j, board);
-					for (int k = 0; k < size(subMoves);k++) {
-						CMove curMove = subMoves[k];
-						moves.push_back(curMove);
-					}
-				}
-			}
-
-		}
-	}
-
-	moves = checkMoves(moves, board, color);
-
-	return moves;
-}
-
 ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, int originalColor, int originalLayers, vector<float> xPosWeights = { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 }, vector<float> yPosWeights = { 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 }) {
 	vector<CMove> moves = getMoves(board, color);
 	ScoredMove move;
@@ -944,11 +929,16 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, i
 		else {
 			if (layers == originalLayers)
 				int a = 3;
-			vector<vector<int>> newBoard = makeMove(board, moves[i]);
-			color *= -1;
-			if (areMovesEqual(moves[i], CMove(vec2(5, 2), vec2(4, 4))) == true && layers == originalLayers) {
+			if (areMovesEqual(moves[i], CMove(vec2(2, 4), vec2(3, 3))) == true && layers == originalLayers) {
 				int a = 2;
 			}
+			vector<vector<int>> newBoard = makeMove(board, moves[i]);
+			if (layers % 2 == 0)
+				if (isCheckmate(newBoard, color * -1)) {
+					bool a = isCheckmate(newBoard, color * -1);
+					return ScoredMove{ moves[i], 20000 };
+				}
+			color *= -1;
 			move = layeredMoveChoice(newBoard, color, layers - 1, originalColor, originalLayers, xPosWeights, yPosWeights);
 			color *= -1;
 			if (layers % 2 != 0) {
