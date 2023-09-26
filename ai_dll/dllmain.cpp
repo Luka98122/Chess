@@ -2,23 +2,22 @@
 #include "dllmain.h"
 #include "Helpers.h"
 #include "TestCases.h"
-
+#include <sstream>
 using namespace std;
 
 
-
-extern "C" {
-	__declspec(dllexport) float pickMove(int* flatArray, int rows, int cols, int color, int layers, int originalColor, int originalLayers) {
-		std::vector<std::vector<int>> board(rows, std::vector<int>(cols));
-		for (int i = 0; i < rows; ++i) {
-			for (int j = 0; j < cols; ++j) {
-				board[i][j] = flatArray[i * cols + j];
-			}
-		}
-		return layeredMoveChoice(board,color,layers,originalColor,originalLayers, { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
-			{ 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 }).score;
+vector<string> split(const string& s, char delimiter) {
+	vector<string> tokens;
+	string token;
+	istringstream tokenStream(s);
+	while (getline(tokenStream, token, delimiter)) {
+		tokens.push_back(token);
 	}
+	return tokens;
 }
+
+
+
 
 
 
@@ -713,11 +712,11 @@ float scoreBoard(vector<vector<int>> board, int ourColor, vector<float> yPosWeig
 	}
 
 	if (isCheckmate(board, ourColor * -1)) {
-		ourScore = ourScore + 1000;
+		ourScore = ourScore + 20000;
 	}
 
 	if (isCheckmate(board, ourColor)) {
-		enemyScore = enemyScore + 1000;
+		enemyScore = enemyScore + 20000;
 	}
 
 
@@ -929,7 +928,7 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, i
 		else {
 			if (layers == originalLayers)
 				int a = 3;
-			if (areMovesEqual(moves[i], CMove(vec2(5, 3), vec2(4, 1))) == true && layers == originalLayers) {
+			if (areMovesEqual(moves[i], CMove(vec2(7, 1), vec2(0, 1))) == true && layers == originalLayers) {
 				int a = 2;
 			}
 			vector<vector<int>> newBoard = makeMove(board, moves[i]);
@@ -976,6 +975,47 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, i
 	return bestMove;
 }
 
+extern "C" {
+	__declspec(dllexport) const char* string_length(const char* input) {
+		std::string str(input);
+		int length = str.length();
+		std::string result = std::to_string(length);
+		char* output = new char[result.length() + 1];
+		strcpy(output, result.c_str());
+
+		char delimiter = ';';
+
+		vector<string> res = split(input, delimiter);
+
+		string output_str = "";
+		vector<vector<int>> board;
+
+		// Convert to board
+
+		for (int i = 0;i < 8;i++) {
+			board.push_back({});
+			for (int j = 0;j < 8;j++) {
+				output_str += res[i * 8 + j];
+				board[i].push_back(stoi(res[i * 8 + j]));
+			}
+			output_str += "\n";
+
+		}
+
+		ScoredMove bestMove = layeredMoveChoice(board, 1, 2, 1, 2);
+
+		board = makeMove(board, bestMove.move);
+		string res_str_board;
+		output_str = "";
+		for (int i = 0;i < 8;i++) {
+			for (int j = 0;j < 8;j++) {
+				output_str += board[i][j] + ";";
+			}
+		}
+
+		return output_str.c_str();
+	}
+}
 
 
 int main()
@@ -984,6 +1024,11 @@ int main()
 
 	locale::global(locale("en_US.UTF-8"));
 	wcout.imbue(locale());
+
+	string res = string_length("2;3;4;5;6;4;3;2;1;1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;-1;-1;-1;-1;-1;-1;-1;-1;-2;-3;-4;-5;-6;-4;-3;-2;");
+
+
+
 	vector<vector<int>> board = makeBoard();
 	int* myVec = new int[64];
 	for (int i = 0; i < 8;i++) {

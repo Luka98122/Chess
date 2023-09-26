@@ -6,12 +6,22 @@ from copy import *
 from ctypes import *
 from ctypes import cdll, c_char_p
 import numpy
-ARRAY_1D = numpy.ctypeslib.ndpointer(dtype=numpy.int32, ndim=1, flags='C')
 
-lib = cdll.LoadLibrary("C:\\Users\\luka\\source\\repos\\Chess\\ai_dll\\x64\\Debug\\ai_dll.dll")
-HelloWorld = lib.pickMove
-lib.pickMove.argtypes = [POINTER(c_int), c_int, c_int, c_int, c_int, c_int, c_int]
-HelloWorld.restype = c_int
+
+# Load the DLL
+dll = CDLL('../ai_dll\\x64\\Release\\ai_dll.dll')
+
+# Define the argument and return types for the function
+dll.string_length.argtypes = [c_char_p]
+dll.string_length.restype = c_char_p
+
+# Call the function and store the result
+#result = dll.string_length(b"Hello, world!").decode('utf-8')
+
+# Print the result
+#print(result)
+
+
 
 #print(HelloWorld("Pop").decode())
 
@@ -34,29 +44,38 @@ globals.counter = 0
 def getCBoardFromEList(entityList):
     board = []
     for i in range(8):
-        board.append([0,0,0,0,0,0,0,0])
+        board.append([])
+        for j in range(8):
+            board[i].append(0)        
     for entity in entityList:
         if entity.color == 0:
             colMultiplier = 1
         else:
             colMultiplier = -1
-        eType = type(board[entity.y][entity.x])
+        eType = type(entity)
         
         if eType == Pawn:
-            board[entity.y][entity.x] = 1
+            val = 1
         if eType == Knight:
-            board[entity.y][entity.x] = 3
+            val = 3
         if eType == Rook:
-            board[entity.y][entity.x] = 2
+            val = 2
         if eType == Bishop:
-            board[entity.y][entity.x] = 4
+            val = 4
         if eType == Queen:
-            board[entity.y][entity.x] = 5
+            val = 5
         if eType == King:
-            board[entity.y][entity.x] = 6
-        board[entity.y][entity.x] *= colMultiplier
-        
-    return board
+            val = 6
+        board[entity.y][entity.x] = str(colMultiplier*val)
+    
+    res_board = ""
+    
+    for i in range(8):
+        for j in range(8):
+            res_board+=(str(board[i][j]))+";"
+    
+
+    return res_board
 
 
 
@@ -789,6 +808,12 @@ cooldownInit = 30
 cooldown = cooldownInit
 turnNo = 0
 entityList = jsonDecoderBig(contents)
+cboard = getCBoardFromEList(entityList)
+res = dll.string_length(cboard.encode('utf-8')).decode()
+print(res)
+
+
+
 # debugPrintBoard(contents)
 emjiList = makeEmoji(entityList)
 emjiList = changeStateEmoji(emjiList, [[0,1],[0,3]])
@@ -802,25 +827,12 @@ while True:
         json_object = json.dumps(info, indent=4)
         start = time.time()
         board = getCBoardFromEList(entityList)
-        arr = numpy.array(board, dtype=numpy.int32)  
-        flat_arr = arr.flatten()
-        print(type(lib))
-        print(type(lib.pickMove))
-        print(type(flat_arr))
-        print(type(arr.shape[0]))
-        print(type(arr.shape[1]))
-        listToPass = []
-        c_array = (c_int * 64)()
-        counter = 0
-        for el in flat_arr:
-            c_array[counter] = el
-            counter+=1
-        move = lib.pickMove(c_array, 8, 8,-1, 2, -1, 2)
         #move = chooseAMove2(entityList, 1, weights, 2)
         end = time.time()
         print(
             f"{end-start} seconds. {globals.counter} considered. {globals.counter/int(end-start)} per second."
         )
+        move = [0, [[1,0],[1,2]]]
         moveX1 = move[1][0][0]
         moveX2 = move[1][1][0]
         moveY1 = move[1][0][1]

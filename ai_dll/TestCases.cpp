@@ -16,6 +16,18 @@ public:
 
 };
 
+class checkmateCase {
+public:
+	vector<vector<int>> board;
+	int color;
+	string name;
+	vector<float> xWeights;
+	vector<float> yWeights;
+
+};
+
+
+
 
 void debugTestCaseWithPrintf(testCase tCase, ScoredMove gotMove) {
 	printf("Expected score %f\n", tCase.expectedBestMove.score);
@@ -138,7 +150,31 @@ bool runTests() {
 
 	};
 
+	vector<vector<int>> testBoard7 = {
+		//0 1  2  3  4  5  6  7
+		{-6,0 ,3 ,0 ,0 ,0 ,0 ,0 }, // 0
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 }, // 1
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 2
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 3
+		{0 ,0 ,2 ,0 ,0 ,0 ,0 ,0 }, // 4
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 5
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 6
+		{0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 }  // 7
 
+	};
+
+	vector<vector<int>> testBoard8 = {
+		//0 1  2  3  4  5  6  7
+		{-6,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 0
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,2 }, // 1
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 2
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 3
+		{0 ,0 ,5 ,0 ,0 ,0 ,0 ,0 }, // 4
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 5
+		{0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 }, // 6
+		{0 ,2 ,0 ,0 ,0 ,0 ,0 ,0 }  // 7
+
+	};
 
 	vector<vector<int>> board = {
 	{2,3,4,5,6,4,3,2},
@@ -186,6 +222,8 @@ bool runTests() {
 	CMove m4(vec2(7,6), vec2(4, 6));
 	CMove m5(vec2(2, 4), vec2(3, 3));
 	CMove m6(vec2(5, 3), vec2(4, 1));
+	CMove m7(vec2(2, 4), vec2(0, 4));
+	CMove m8(vec2(2, 4), vec2(2, 0));
 
 
 	testCase case1 = { testBoard1, ScoredMove {m,0.0}, 1, "Knight fork choice",{ 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
@@ -203,12 +241,17 @@ bool runTests() {
 	testCase case6 = { testBoard6, ScoredMove {m6, 0.0}, 1, "Checkmate for color 1 via knight", { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
 { 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 } };
 
+	testCase case7 = { testBoard7, ScoredMove {m7, 0.0}, 1, "Checkmate 2 for color 1 via rook", { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
+{ 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 } };
+
+	testCase case8 = { testBoard8, ScoredMove {m8, 0.0}, 1, "Checkmate for color 1 via queen", { 1.0,1.02,1.04,1.08,1.08,1.04,1.02,1.0 },
+{ 1.0,1.02,1.04,1.06,1.08,1.1,1.12,1.14 } };
 
 	//debugTestCaseWithPrintf(case1, ScoredMove{ m,10.1592045 });
-	vector<testCase> testCases = {case1,case2,case3,case4,case5,case6};
+	vector<testCase> testCases = {case1,case2,case3,case4,case5,case6,case7,case8};
 	// End of test cases
 
-
+	vector<checkmateCase> checkmateCases = {};
 
 	// run them
 
@@ -220,6 +263,21 @@ bool runTests() {
 		bool thisRes;
 		ScoredMove gotMove = layeredMoveChoice(testCases[i].board, testCases[i].color, 2, testCases[i].color, 2, testCases[i].xWeights, testCases[i].yWeights);
 		if (areMovesEqual(gotMove.move, testCases[i].expectedBestMove.move) == true) {
+			thisRes = true;
+			printf("Test case %d, also know as %s : PASSED !\n", i, testCases[i].name.c_str());
+		}
+		else {
+			thisRes = false;
+			//debugTestCaseWithPrintf(testCases[i], gotMove);
+			printf("Test case %d, also know as %s : FAILED !\n", i, testCases[i].name.c_str());
+		}
+
+	}
+
+	for (int i = 0;i < size(checkmateCases);i++) {
+		bool thisRes;
+		ScoredMove gotMove = layeredMoveChoice(checkmateCases[i].board, checkmateCases[i].color, 2, checkmateCases[i].color, 2, checkmateCases[i].xWeights, checkmateCases[i].yWeights);
+		if (gotMove.score>=19000) {
 			thisRes = true;
 			printf("Test case %d, also know as %s : PASSED !\n", i, testCases[i].name.c_str());
 		}
