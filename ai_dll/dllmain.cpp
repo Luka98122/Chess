@@ -1002,14 +1002,15 @@ extern "C" {
 
 		}
 
-		ScoredMove bestMove = layeredMoveChoice(board, 1, 2, 1, 2);
+		ScoredMove bestMove = layeredMoveChoice(board, -1, 2, -1, 2);
 
 		board = makeMove(board, bestMove.move);
 		string res_str_board;
 		output_str = "";
 		for (int i = 0;i < 8;i++) {
 			for (int j = 0;j < 8;j++) {
-				output_str += board[i][j] + ";";
+				output_str += to_string(board[i][j]) + ";";
+				printf((output_str+"\n").c_str());
 			}
 		}
 

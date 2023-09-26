@@ -773,6 +773,49 @@ def makeEmoji(entityList):
     return boardList
 
 
+def getEntityListFromString(str_board):
+    eList = []
+    str_board.replace("\n","")
+    str_board = str_board.split(";")
+    for i in range(8):
+        for j in range(8):
+            charRn = int(str_board[i*8+j])
+            
+
+            
+
+            
+                        
+            if charRn == 0:
+                continue
+            
+            realCol = charRn/abs(charRn)
+            
+            if realCol == 1:
+                col = 0
+            if realCol == -1:
+                col = 1            
+            
+            charRn = abs(charRn)
+            
+            if charRn == 6:
+                char = King(j,i,col)
+            if charRn == 5:
+                char = Queen(j,i,col)
+            if charRn == 2:
+                char = Rook(j,i,col)
+            if charRn == 4:
+                char = Bishop(j,i,col)
+            if charRn == 3:
+                char = Knight(j,i,col)
+            if charRn == 1:
+                char = Pawn(j,i,col)
+            eList.append(char)
+    return eList
+            
+
+
+
 f = open("JSONDATA.json", "r")
 contents = f.read()
 f.close()
@@ -808,9 +851,7 @@ cooldownInit = 30
 cooldown = cooldownInit
 turnNo = 0
 entityList = jsonDecoderBig(contents)
-cboard = getCBoardFromEList(entityList)
-res = dll.string_length(cboard.encode('utf-8')).decode()
-print(res)
+
 
 
 
@@ -825,21 +866,12 @@ while True:
             dataList.append(data)
         info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
         json_object = json.dumps(info, indent=4)
-        start = time.time()
-        board = getCBoardFromEList(entityList)
-        #move = chooseAMove2(entityList, 1, weights, 2)
-        end = time.time()
-        print(
-            f"{end-start} seconds. {globals.counter} considered. {globals.counter/int(end-start)} per second."
-        )
-        move = [0, [[1,0],[1,2]]]
-        moveX1 = move[1][0][0]
-        moveX2 = move[1][1][0]
-        moveY1 = move[1][0][1]
-        moveY2 = move[1][1][1]
-
-        print(move)
-        entityList = makeMove(move, entityList, 0)
+        cboard = getCBoardFromEList(entityList)
+        res = dll.string_length(cboard.encode('utf-8'))
+        print(res)
+        entityList = getEntityListFromString(res.decode())
+        for entity in entityList:
+            print(f"Entity x {entity.x} Entity y {entity.y} ")
         turnNo += 1
         continue
 
