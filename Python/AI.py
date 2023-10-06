@@ -12,8 +12,11 @@ import numpy
 dll = CDLL('../ai_dll\\x64\\Release\\ai_dll.dll')
 
 # Define the argument and return types for the function
-dll.string_length.argtypes = [c_char_p]
-dll.string_length.restype = c_char_p
+dll.pick_move.argtypes = [c_char_p]
+dll.pick_move.restype = c_char_p
+
+dll.get_moves.argtypes = [c_char_p]
+dll.get_moves.restype = c_char_p
 
 # Call the function and store the result
 #result = dll.string_length(b"Hello, world!").decode('utf-8')
@@ -815,6 +818,32 @@ def getEntityListFromString(str_board):
             
 
 
+def handleMoves(DLL,entityList,color):
+    cBoard2 = getCBoardFromEList(entityList)
+    rawMoveStr = DLL.get_moves((cBoard2+"<"+str(color)).encode('utf-8'))
+    rawMoveStr = rawMoveStr.decode()
+    
+    rawMovesList = rawMoveStr.split("M")
+    moves = []
+    
+    for rmove in rawMovesList:
+        res = rmove.split(";")
+        if rmove == '':
+            break
+        x1 = int(res[0])
+        y1 = int(res[1])
+        x2 = int(res[2])
+        y2 = int(res[3])
+        moves.append([[x1,y1],[x2,y2]])
+    
+    
+    return moves
+    
+        
+    
+
+
+
 
 f = open("JSONDATA.json", "r")
 contents = f.read()
@@ -844,6 +873,10 @@ weights = [
 
 window = pygame.display.set_mode((800, 800))
 
+
+
+
+
 lastEntity = None
 program_radi = True
 spots = None
@@ -852,13 +885,18 @@ cooldown = cooldownInit
 turnNo = 0
 entityList = jsonDecoderBig(contents)
 
-
-
+cboard = getCBoardFromEList(entityList)
+res = handleMoves(dll,entityList,1)
 
 # debugPrintBoard(contents)
 emjiList = makeEmoji(entityList)
 emjiList = changeStateEmoji(emjiList, [[0,1],[0,3]])
+selectedCoords = [-1,-1]
+nextMove = True
 while True:
+    if nextMove:
+        moves = handleMoves(dll,entityList,1)
+        nextMove = False
     if turnNo % 2 == 1:
         dataList = []
         for entity in entityList:
@@ -867,12 +905,13 @@ while True:
         info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
         json_object = json.dumps(info, indent=4)
         cboard = getCBoardFromEList(entityList)
-        res = dll.string_length(cboard.encode('utf-8'))
+        res = dll.pick_move(cboard.encode('utf-8'))
         print(res)
         entityList = getEntityListFromString(res.decode())
         for entity in entityList:
             print(f"Entity x {entity.x} Entity y {entity.y} ")
         turnNo += 1
+        nextMove = True
         continue
 
     crtaj_tablu(window)
@@ -897,21 +936,19 @@ while True:
             if lastEntity != None:
                 if 0 == lastEntity.color:
                     if res[0] == True:
-                        if res[1] != None:
-                            if res[1].color != lastEntity.color:
-                                if tilePos in spots:
-                                    lastEntity.move(tilePos)
-                                    change = 1
-                                    turnNo += 1
-                                    entityList.remove(entityClickedOn)
-                                    entityClickedOn = None
-                                    lastEntity = None
-                                    spots = None
-                                    mouseB = False
+                        if [selectedCoords, [entityClickedOn.x,entityClickedOn.y]] in moves:
+                            lastEntity.move(tilePos)
+                            change = 1
+                            turnNo += 1
+                            entityList.remove(entityClickedOn)
+                            entityClickedOn = None
+                            lastEntity = None
+                            spots = None
+                            mouseB = False
 
-                                    continue
+                            continue
                     else:
-                        if tilePos in spots:
+                        if [selectedCoords, [tilePos[0],tilePos[1]]] in moves:
                             lastEntity.move(tilePos)
                             change = 1
                             turnNo += 1
@@ -926,6 +963,12 @@ while True:
             lastEntity = entityClickedOn
             if 0 == lastEntity.color:
                 spots = possibleSpots(entityClickedOn, entityList)
+                spots2 = []
+                for move in moves:
+                    if move[0] == [entityClickedOn.x,entityClickedOn.y]:
+                        spots2.append(move[1])
+                spots = spots2
+                selectedCoords = [entityClickedOn.x,entityClickedOn.y]
     flagVar = 0
 
     # Drawing

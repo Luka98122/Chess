@@ -217,7 +217,7 @@ vector<CMove> pawnMoves(int y, int x, vector<vector<int>> board) {
 		if (dy == -1)
 			startPos = 6;
 
-		if (y == startPos) {
+		if (y == startPos && board[y + dy][x] == 0) {
 			if (board[y + dy * 2][x] == 0) {
 				CMove move(vec2(x, y), vec2(x, y + dy * 2));
 				moves.push_back(move);
@@ -976,7 +976,7 @@ ScoredMove layeredMoveChoice(vector<vector<int>> board, int color, int layers, i
 }
 
 extern "C" {
-	__declspec(dllexport) const char* string_length(const char* input) {
+	__declspec(dllexport) const char* pick_move(const char* input) {
 		std::string str(input);
 		int length = str.length();
 		std::string result = std::to_string(length);
@@ -1016,6 +1016,53 @@ extern "C" {
 
 		return output_str.c_str();
 	}
+
+	__declspec(dllexport) const char* get_moves(const char* input) {
+		vector<string> res = split(input, '<');
+
+
+		string output_str = "";
+		vector<vector<int>> board;
+
+		// Convert to board
+		vector<string> res2 = split(res[0], ';');
+		for (int i = 0;i < 8;i++) {
+			board.push_back({});
+			for (int j = 0;j < 8;j++) {
+				output_str += res2[i * 8 + j];
+				board[i].push_back(stoi(res2[i * 8 + j]));
+			}
+			output_str += "\n";
+
+		}
+
+		vector<CMove> moves;
+
+		if (res[1] == "-1") {
+			int color = -1;
+			moves = getMoves(board, color);
+		}
+		if (res[1] == "1") {
+			int color = 1;
+			moves = getMoves(board, color);
+		}
+
+		string outputStr = "";
+
+		for (int i = 0;i < moves.size();i++) {
+			int x1 = moves[i].from.x;
+			int y1 = moves[i].from.y;
+			int x2 = moves[i].to.x;
+			int y2 = moves[i].to.y;
+
+			outputStr = outputStr + to_string(x1) + ";" + to_string(y1) + ";" + to_string(x2) + ";" + to_string(y2) + ";M";
+
+
+		}
+		return outputStr.c_str();
+
+	}
+
 }
 
 
@@ -1026,7 +1073,7 @@ int main()
 	locale::global(locale("en_US.UTF-8"));
 	wcout.imbue(locale());
 
-	string res = string_length("2;3;4;5;6;4;3;2;1;1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;-1;-1;-1;-1;-1;-1;-1;-1;-2;-3;-4;-5;-6;-4;-3;-2;");
+	string res = get_moves("2;3;4;5;6;4;3;2;1;1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;-1;-1;-1;-1;-1;-1;-1;-1;-2;-3;-4;-5;-6;-4;-3;-2;<1");
 
 
 
