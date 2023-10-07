@@ -18,6 +18,13 @@ dll.pick_move.restype = c_char_p
 dll.get_moves.argtypes = [c_char_p]
 dll.get_moves.restype = c_char_p
 
+
+dll.is_checkmate.argtypes = [c_char_p]
+dll.is_checkmate.restype = c_char_p
+
+
+
+
 # Call the function and store the result
 #result = dll.string_length(b"Hello, world!").decode('utf-8')
 
@@ -895,6 +902,13 @@ selectedCoords = [-1,-1]
 nextMove = True
 while True:
     if nextMove:
+        myStr = getCBoardFromEList(entityList)+"<1"
+        if dll.is_checkmate(myStr.encode('utf-8')).decode() == "L":
+            time.sleep(30)
+            exit()
+        if dll.is_checkmate((getCBoardFromEList(entityList)+"<-1").encode('utf-8')).decode() == "L":
+            time.sleep(30)
+            exit()
         moves = handleMoves(dll,entityList,1)
         nextMove = False
     if turnNo % 2 == 1:
@@ -946,7 +960,6 @@ while True:
                             spots = None
                             mouseB = False
 
-                            continue
                     else:
                         if [selectedCoords, [tilePos[0],tilePos[1]]] in moves:
                             lastEntity.move(tilePos)

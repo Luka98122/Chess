@@ -494,6 +494,7 @@ vector<CMove> kingMoves(int y, int x, vector<vector<int>>board) {
 		int b = 3;
 	}
 	vector<vec2> controlSpots = controlledSpots(color, board);
+	color *= -1;
 	int lever = 0;
 	for (int i = 0;i < 8;i++) {
 		lever = 0;
@@ -504,6 +505,14 @@ vector<CMove> kingMoves(int y, int x, vector<vector<int>>board) {
 
 		if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
 			vec2 newPos = { newX,newY };
+
+			if (board[newY][newX] != 0) {
+
+				if ((board[newY][newX] / abs(board[newY][newX])) == color) {
+					continue;
+				}
+			}
+
 			for (int j = 0; j < size(controlSpots);j++) {
 				if (controlSpots[j].x == newX && controlSpots[j].y == newY) {
 					lever = 1;
@@ -1063,6 +1072,37 @@ extern "C" {
 
 	}
 
+	__declspec(dllexport) const char* is_checkmate(const char* input) {
+		vector<string> res = split(input, '<');
+
+
+		string output_str = "";
+		vector<vector<int>> board;
+
+		// Convert to board
+		vector<string> res2 = split(res[0], ';');
+		for (int i = 0;i < 8;i++) {
+			board.push_back({});
+			for (int j = 0;j < 8;j++) {
+				output_str += res2[i * 8 + j];
+				board[i].push_back(stoi(res2[i * 8 + j]));
+			}
+			output_str += "\n";
+
+		}
+
+		int color = stoi(res[1]);
+
+		if (isCheckmate(board,color)) {
+			return "L";
+		}
+
+		if (isCheckmate(board, color*-1)) {
+			return "W";
+		}
+
+		return "N";
+	}
 }
 
 
@@ -1073,7 +1113,7 @@ int main()
 	locale::global(locale("en_US.UTF-8"));
 	wcout.imbue(locale());
 
-	string res = get_moves("2;3;4;5;6;4;3;2;1;1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;-1;-1;-1;-1;-1;-1;-1;-1;-2;-3;-4;-5;-6;-4;-3;-2;<1");
+	string res = is_checkmate("2;3;4;5;6;4;3;2;1;1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;-1;-1;-1;-1;-1;-1;-1;-1;-2;-3;-4;-5;-6;-4;-3;-2;<1");
 
 
 
