@@ -9,7 +9,7 @@ import numpy
 
 
 # Load the DLL
-dll = CDLL('../ai_dll\\x64\\Release\\ai_dll.dll')
+dll = CDLL("../ai_dll\\x64\\Release\\ai_dll.dll")
 
 # Define the argument and return types for the function
 dll.pick_move.argtypes = [c_char_p]
@@ -23,17 +23,14 @@ dll.is_checkmate.argtypes = [c_char_p]
 dll.is_checkmate.restype = c_char_p
 
 
-
-
 # Call the function and store the result
-#result = dll.string_length(b"Hello, world!").decode('utf-8')
+# result = dll.string_length(b"Hello, world!").decode('utf-8')
 
 # Print the result
-#print(result)
+# print(result)
 
 
-
-#print(HelloWorld("Pop").decode())
+# print(HelloWorld("Pop").decode())
 
 
 from Pawn import *
@@ -49,21 +46,19 @@ from Trees import *
 globals.counter = 0
 
 
-
-
 def getCBoardFromEList(entityList):
     board = []
     for i in range(8):
         board.append([])
         for j in range(8):
-            board[i].append(0)        
+            board[i].append(0)
     for entity in entityList:
         if entity.color == 0:
             colMultiplier = 1
         else:
             colMultiplier = -1
         eType = type(entity)
-        
+
         if eType == Pawn:
             val = 1
         if eType == Knight:
@@ -76,21 +71,15 @@ def getCBoardFromEList(entityList):
             val = 5
         if eType == King:
             val = 6
-        board[entity.y][entity.x] = str(colMultiplier*val)
-    
+        board[entity.y][entity.x] = str(colMultiplier * val)
+
     res_board = ""
-    
+
     for i in range(8):
         for j in range(8):
-            res_board+=(str(board[i][j]))+";"
-    
+            res_board += (str(board[i][j])) + ";"
 
     return res_board
-
-
-
-
-
 
 
 def is_check(king, entityList):
@@ -150,6 +139,7 @@ def scoreBoard(ENtityList, color, weights: list):
 
 def scoreBoardEmoji():
     pass
+
 
 # Collapse1
 def canKingGoHere(x, y, king, entityList):
@@ -307,7 +297,8 @@ def possibleSpots(entity, entityList):
                         spots.append([entity.x + dir[0], entity.y + dir[1]])
     return spots
 
-def possibleSpotsEmoji(entity : str, x, y, entityList):
+
+def possibleSpotsEmoji(entity: str, x, y, entityList):
     spots = []
     if entity in "♙♟":
         if entity == "♙":
@@ -319,8 +310,7 @@ def possibleSpotsEmoji(entity : str, x, y, entityList):
         if (
             spotOccupied(x + 1, y + direction, entityList)[0] == True
             and spotOccupied(x + 1, y + direction, entityList)[1] != None
-            and spotOccupied(x + 1, y + direction, entityList)[1].color
-            != entity.color
+            and spotOccupied(x + 1, y + direction, entityList)[1].color != entity.color
         ):
             if direction == 1:
                 if spotOccupied(x + 1, y + direction, entityList)[1] in "♚♛♝♜♟♞":
@@ -331,8 +321,7 @@ def possibleSpotsEmoji(entity : str, x, y, entityList):
         if (
             spotOccupied(x - 1, y + direction, entityList)[0] == True
             and spotOccupied(x - 1, y + direction, entityList)[1] != None
-            and spotOccupied(x - 1, y + direction, entityList)[1].color
-            != entity.color
+            and spotOccupied(x - 1, y + direction, entityList)[1].color != entity.color
         ):
             if direction == 1:
                 if spotOccupied(x - 1, y + direction, entityList)[1] in "♖♘♗♕♔♙":
@@ -342,10 +331,7 @@ def possibleSpotsEmoji(entity : str, x, y, entityList):
                     spots.append([x - 1, y + direction])
         if entity.moves == 0:
             if spotOccupied(x, y + direction, entityList)[0] == False:
-                if (
-                    spotOccupied(x, y + direction * 2, entityList)[0]
-                    == False
-                ):
+                if spotOccupied(x, y + direction * 2, entityList)[0] == False:
                     spots.append(
                         [
                             x,
@@ -358,9 +344,7 @@ def possibleSpotsEmoji(entity : str, x, y, entityList):
         for i in range(4):
             dir = dirs[i]
             for j in range(1, 9):
-                status = spotOccupied(
-                    x + dir[0] * j, y + dir[1] * j, entityList
-                )
+                status = spotOccupied(x + dir[0] * j, y + dir[1] * j, entityList)
                 if status[0] == False:
                     spots.append([x + dir[0] * j, y + dir[1] * j])
                 elif status[0] == True:
@@ -377,9 +361,7 @@ def possibleSpotsEmoji(entity : str, x, y, entityList):
         for i in range(4):
             dir = dirs[i]
             for j in range(1, 9):
-                status = spotOccupied(
-                    x + dir[0] * j, y + dir[1] * j, entityList
-                )
+                status = spotOccupied(x + dir[0] * j, y + dir[1] * j, entityList)
                 if status[0] == False:
                     spots.append([x + dir[0] * j, y + dir[1] * j])
                 elif status[0] == True:
@@ -396,9 +378,7 @@ def possibleSpotsEmoji(entity : str, x, y, entityList):
         for i in range(8):
             dir = dirs[i]
             for j in range(1, 9):
-                status = spotOccupied(
-                    x + dir[0] * j, y + dir[1] * j, entityList
-                )
+                status = spotOccupied(x + dir[0] * j, y + dir[1] * j, entityList)
                 if status[0] == False:
                     spots.append([x + dir[0] * j, y + dir[1] * j])
                 elif status[0] == True:
@@ -415,9 +395,7 @@ def possibleSpotsEmoji(entity : str, x, y, entityList):
         for i in range(8):
             dir = dirs[i]
             for j in range(1, 2):
-                status = spotOccupied(
-                    x + dir[0] * j, y + dir[1] * j, entityList
-                )
+                status = spotOccupied(x + dir[0] * j, y + dir[1] * j, entityList)
                 if status[0] == False:
                     spots.append([x + dir[0] * j, y + dir[1] * j])
                 elif status[0] == True:
@@ -449,6 +427,7 @@ def possibleSpotsEmoji(entity : str, x, y, entityList):
                     if status[1].color != entity.color:
                         spots.append([x + dir[0], y + dir[1]])
     return spots
+
 
 def jsonSerializer(object):
     resList = {
@@ -588,12 +567,13 @@ def changeState(EntitYList, move, purp):
             break
     return EntitYList
 
+
 def changeStateEmoji(emojiBoard, move):
     emojiBoard2 = deepcopy(emojiBoard)
     emojiBoard2[move[1][1]][move[1][0]] = emojiBoard2[move[0][1]][move[0][0]]
     emojiBoard2[move[0][1]][move[0][0]] = "X"
     return emojiBoard2
-    
+
 
 def populate(tree: Tree, gameState, color):
     res = jsonDecoderBig(gameState)
@@ -670,7 +650,8 @@ def chooseAMove(gameState, color, weights):
         debugPrintBoard(state)
     return [bestSoFar, BestMove]
 
-# ♖♘♗♕♔♙ 
+
+# ♖♘♗♕♔♙
 # ♜♞♝♛♚♟
 def emojiToEList(emojiBoard):
     eList = []
@@ -678,32 +659,31 @@ def emojiToEList(emojiBoard):
         for j in range(8):
             c = emojiBoard[i][j]
             if c == "♙":
-                eList.append(Pawn(j,i,0))
+                eList.append(Pawn(j, i, 0))
             elif c == "♔":
-                eList.append(King(j,i,0))
+                eList.append(King(j, i, 0))
             elif c == "♕":
-                eList.append(Queen(j,i,0))
+                eList.append(Queen(j, i, 0))
             elif c == "♖":
-                eList.append(Rook(j,i,0))
+                eList.append(Rook(j, i, 0))
             elif c == "♘":
-                eList.append(Knight(j,i,0))
+                eList.append(Knight(j, i, 0))
             elif c == "♗":
-                eList.append(Bishop(j,i,0))
-            
+                eList.append(Bishop(j, i, 0))
+
             # black
             elif c == "♟":
-                eList.append(Pawn(j,i,1))
+                eList.append(Pawn(j, i, 1))
             elif c == "♚":
-                eList.append(King(j,i,1))
+                eList.append(King(j, i, 1))
             elif c == "♛":
-                eList.append(Queen(j,i,1))
+                eList.append(Queen(j, i, 1))
             elif c == "♜":
-                eList.append(Rook(j,i,1))
+                eList.append(Rook(j, i, 1))
             elif c == "♞":
-                eList.append(Knight(j,i,1))
+                eList.append(Knight(j, i, 1))
             elif c == "♝":
-                eList.append(Bishop(j,i,1))
-            
+                eList.append(Bishop(j, i, 1))
 
 
 def chooseAMove2(EntityList, color, weights, depthLeft):
@@ -719,7 +699,6 @@ def chooseAMove2(EntityList, color, weights, depthLeft):
                 bestScore = res[0]
                 bestMove = move
         else:
-            
             newEmojiBoard = changeStateEmoji(EmojiBoard, move, "None")
             score = scoreBoard(newEmojiBoard, color, weights)
             if score > bestScore:
@@ -743,15 +722,16 @@ def makeMove(move, eList, turnNo):
 
     return eList
 
+
 def makeEmoji(entityList):
     boardList = []
     for i in range(8):
         boardList.append([""])
         for j in range(8):
             if (i + j) % 2 != 0:
-                boardList[i]+="⬜"
+                boardList[i] += "⬜"
             else:
-                boardList[i]+="⬛"
+                boardList[i] += "⬛"
     for entity in entityList:
         if entity.color == 0:
             if type(entity) == King:
@@ -785,71 +765,66 @@ def makeEmoji(entityList):
 
 def getEntityListFromString(str_board):
     eList = []
-    str_board.replace("\n","")
+    str_board.replace("\n", "")
     str_board = str_board.split(";")
     for i in range(8):
         for j in range(8):
-            charRn = int(str_board[i*8+j])
-            
+            charRn = int(str_board[i * 8 + j])
 
-            
-
-            
-                        
             if charRn == 0:
                 continue
-            
-            realCol = charRn/abs(charRn)
-            
+
+            realCol = charRn / abs(charRn)
+
             if realCol == 1:
                 col = 0
             if realCol == -1:
-                col = 1            
-            
+                col = 1
+
             charRn = abs(charRn)
-            
+
             if charRn == 6:
-                char = King(j,i,col)
+                char = King(j, i, col)
             if charRn == 5:
-                char = Queen(j,i,col)
+                char = Queen(j, i, col)
             if charRn == 2:
-                char = Rook(j,i,col)
+                char = Rook(j, i, col)
             if charRn == 4:
-                char = Bishop(j,i,col)
+                char = Bishop(j, i, col)
             if charRn == 3:
-                char = Knight(j,i,col)
+                char = Knight(j, i, col)
             if charRn == 1:
-                char = Pawn(j,i,col)
+                char = Pawn(j, i, col)
             eList.append(char)
     return eList
-            
 
 
-def handleMoves(DLL,entityList,color):
+def recExcept(DLL, cboa, col):
+    rawMoveStr = DLL.get_moves((cboa + "<" + str(col)).encode("utf-8"))
+    try:
+        rawMoveStr = rawMoveStr.decode()
+    except:
+        return recExcept(DLL, cboa, col)
+    return rawMoveStr
+
+
+def handleMoves(DLL, entityList, color):
     cBoard2 = getCBoardFromEList(entityList)
-    rawMoveStr = DLL.get_moves((cBoard2+"<"+str(color)).encode('utf-8'))
-    rawMoveStr = rawMoveStr.decode()
-    
+    rawMoveStr = recExcept(DLL, cBoard2, color)
     rawMovesList = rawMoveStr.split("M")
     moves = []
-    
+
     for rmove in rawMovesList:
         res = rmove.split(";")
-        if rmove == '':
+        if rmove == "":
             break
         x1 = int(res[0])
         y1 = int(res[1])
         x2 = int(res[2])
         y2 = int(res[3])
-        moves.append([[x1,y1],[x2,y2]])
-    
-    
+        moves.append([[x1, y1], [x2, y2]])
+
     return moves
-    
-        
-    
-
-
 
 
 f = open("JSONDATA.json", "r")
@@ -881,9 +856,6 @@ weights = [
 window = pygame.display.set_mode((800, 800))
 
 
-
-
-
 lastEntity = None
 program_radi = True
 spots = None
@@ -893,23 +865,30 @@ turnNo = 0
 entityList = jsonDecoderBig(contents)
 
 cboard = getCBoardFromEList(entityList)
-res = handleMoves(dll,entityList,1)
+res = handleMoves(dll, entityList, 1)
 
 # debugPrintBoard(contents)
 emjiList = makeEmoji(entityList)
-emjiList = changeStateEmoji(emjiList, [[0,1],[0,3]])
-selectedCoords = [-1,-1]
+emjiList = changeStateEmoji(emjiList, [[0, 1], [0, 3]])
+selectedCoords = [-1, -1]
 nextMove = True
 while True:
     if nextMove:
-        myStr = getCBoardFromEList(entityList)+"<1"
-        if dll.is_checkmate(myStr.encode('utf-8')).decode() == "L":
+        myStr = getCBoardFromEList(entityList) + "<1"
+        if dll.is_checkmate(myStr.encode("utf-8")).decode() == "L":
+            pygame.display.update()
             time.sleep(30)
             exit()
-        if dll.is_checkmate((getCBoardFromEList(entityList)+"<-1").encode('utf-8')).decode() == "L":
+        if (
+            dll.is_checkmate(
+                (getCBoardFromEList(entityList) + "<-1").encode("utf-8")
+            ).decode()
+            == "L"
+        ):
+            pygame.display.update()
             time.sleep(30)
             exit()
-        moves = handleMoves(dll,entityList,1)
+        moves = handleMoves(dll, entityList, 1)
         nextMove = False
     if turnNo % 2 == 1:
         dataList = []
@@ -919,7 +898,7 @@ while True:
         info = {"GameState": dataList, "TurnNo": turnNo, "Validity": True}
         json_object = json.dumps(info, indent=4)
         cboard = getCBoardFromEList(entityList)
-        res = dll.pick_move(cboard.encode('utf-8'))
+        res = dll.pick_move(cboard.encode("utf-8"))
         print(res)
         entityList = getEntityListFromString(res.decode())
         for entity in entityList:
@@ -950,7 +929,10 @@ while True:
             if lastEntity != None:
                 if 0 == lastEntity.color:
                     if res[0] == True:
-                        if [selectedCoords, [entityClickedOn.x,entityClickedOn.y]] in moves:
+                        if [
+                            selectedCoords,
+                            [entityClickedOn.x, entityClickedOn.y],
+                        ] in moves:
                             lastEntity.move(tilePos)
                             change = 1
                             turnNo += 1
@@ -961,7 +943,7 @@ while True:
                             mouseB = False
 
                     else:
-                        if [selectedCoords, [tilePos[0],tilePos[1]]] in moves:
+                        if [selectedCoords, [tilePos[0], tilePos[1]]] in moves:
                             lastEntity.move(tilePos)
                             change = 1
                             turnNo += 1
@@ -978,10 +960,10 @@ while True:
                 spots = possibleSpots(entityClickedOn, entityList)
                 spots2 = []
                 for move in moves:
-                    if move[0] == [entityClickedOn.x,entityClickedOn.y]:
+                    if move[0] == [entityClickedOn.x, entityClickedOn.y]:
                         spots2.append(move[1])
                 spots = spots2
-                selectedCoords = [entityClickedOn.x,entityClickedOn.y]
+                selectedCoords = [entityClickedOn.x, entityClickedOn.y]
     flagVar = 0
 
     # Drawing

@@ -1,13 +1,27 @@
-# Chess
-Luka Markovic and Dejan Livada
+# Python Chess Game
 
-This is a project made using both C/C++ and Python.
+A full-featured chess game built with **Python** and **Pygame**, supporting multiple play modes including **local multiplayer**, **LAN multiplayer**, and an **AI opponent**.
 
-Python is the frontend of the project, with displaying chess pieces, taking user input, and sending the boardState to the C++ DLL, which tells it possible moves, and the best move to play.
+---
 
-Before making a bot for chess, this chess was playable multiplayer, via socket, and two player on one device.
+![Play Against AI](https://i.postimg.cc/Ls5BG4GD/play-Against-AI.png)
 
-ISSUES:
-    1. En passant, and castling does not work ( not added )
-    2. Promotion does not work ( not added)
-    3. Recently found a weird one about a king eating his own pawn?
+## Features
+
+- **Local Multiplayer** — Two players can play on the same computer.
+- **LAN Multiplayer** — Host or join games over a local network using a simple server-client model.
+- **AI Opponent** — Challenge a chess bot:
+  - Initially written in Python.
+  - Later ported to a high-performance **C++ DLL** for better efficiency.
+
+---
+
+![Multiplayer](https://i.postimg.cc/sVrkqk6r/Chat-With-Custom-Colors-Show-Case.png)
+
+## AI Details
+
+- The AI evaluates board positions and calculates optimal moves.
+- Originally implemented in Python, then optimized using a C++ engine accessed via a dynamically linked library (DLL).
+- The Python side communicates with the DLL for fast move generation.
+
+---

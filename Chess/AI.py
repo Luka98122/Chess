@@ -5,15 +5,15 @@ import threading
 from copy import *
 
 
-from Pawn import *
-from Rook import *
-from Bishop import *
-from Knight import *
-from Queen import *
-from King import *
-from globals import *
-from HelperFunctions import *
-from Trees import *
+from ..Python.Pawn import *
+from ..Python.Rook import *
+from ..Python.Bishop import *
+from ..Python.Knight import *
+from ..Python.Queen import *
+from ..Python.King import *
+from ..Python.globals import *
+from ..Python.HelperFunctions import *
+from ..Python.Trees import *
 
 globals.counter = 0
 
