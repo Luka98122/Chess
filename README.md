@@ -25,3 +25,7 @@ A full-featured chess game built with **Python** and **Pygame**, supporting mult
 - The Python side communicates with the DLL for fast move generation.
 
 ---
+
+### Collaborators
+
+- Special thanks to [Dexxxon09](https://github.com/Dexxxon09) for contributions and support on this project.
